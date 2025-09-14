@@ -639,17 +639,34 @@
         // 重置游戏数据
         function resetGameData() {
             if (confirm('确定要重置所有游戏数据吗？这将清除所有进度、最高分记录和汉字数据。')) {
+                // 显示加载动画
+                document.getElementById('loading').style.display = 'flex';
+                
+                // 清除所有游戏数据
                 localStorage.removeItem('findDifferenceHighScore');
                 localStorage.removeItem('findDifferenceLevel');
                 localStorage.removeItem('linkGameBestTime');
                 localStorage.removeItem('characterData');
                 
-                // 更新显示
-                document.getElementById('findDiffHighScore').textContent = '0';
-                document.getElementById('linkGameBestTime').textContent = '--:--';
-                
-                alert('游戏数据已重置！页面将刷新以重新加载汉字数据。');
-                location.reload();
+                // 强制重新加载完整数据
+                const script = document.createElement('script');
+                script.src = 'complete-character-data.js';
+                script.onload = function() {
+                    // 检查数据是否已加载
+                    const loadedData = JSON.parse(localStorage.getItem('characterData') || '[]');
+                    if (loadedData.length > 0) {
+                        alert('游戏数据已重置！汉字数据已重新加载。');
+                        location.reload();
+                    } else {
+                        alert('游戏数据重置失败，请检查网络连接后重试');
+                        location.reload();
+                    }
+                };
+                script.onerror = function() {
+                    alert('游戏数据重置失败，请检查网络连接后重试');
+                    location.reload();
+                };
+                document.head.appendChild(script);
             }
         }
         
