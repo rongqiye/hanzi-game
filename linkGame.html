@@ -2,8 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="screen-orientation" content="portrait">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="msapplication-orientation" content="portrait">
     <title>连连看模式 - 汉字大作战</title>
     <!-- 添加音效资源 -->
     <audio id="selectSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
@@ -248,22 +251,7 @@
             }
         }
         
-        /* 横屏模式优化 */
-        @media (orientation: landscape) {
-            .game-container {
-                max-width: 90vh;
-                margin: 10px auto;
-            }
-            
-            .grid {
-                grid-template-columns: repeat(10, 1fr);
-                grid-template-rows: repeat(6, 1fr);
-            }
-            
-            .buttons {
-                margin-top: 10px;
-            }
-        }
+        /* 移除横屏模式，固定使用竖屏布局 */
         
         /* 完成游戏时的庆祝动画 */
         .celebration {
