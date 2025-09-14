@@ -43,52 +43,92 @@ Best Time: ${bestTime}',
         
         let currentLang = localStorage.getItem('language') || 'zh-CN';
         
+        // 强制使用标准格式
+        if (currentLang !== 'zh-CN' && currentLang !== 'en-US') {
+            currentLang = 'zh-CN'; // 默认值
+        }
+        localStorage.setItem('language', currentLang);
+        
         function t(key, params = {}) {
             const text = translations[currentLang][key] || translations['zh-CN'][key];
             return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
         }
         
         function applyTranslations() {
+            // 更新页面标题和所有UI元素文本
             document.title = t('title');
-            document.querySelector('.timer .label').textContent = t('timer') + ': ';
-            document.querySelector('.pairs-left .label').textContent = t('pairsLeft') + ': ';
-            document.querySelector('.best-time .label').textContent = t('bestTime') + ': ';
-            document.querySelector('.back-button').textContent = t('back');
-            document.querySelector('.restart-button').textContent = t('restart');
-            document.getElementById('soundButton').textContent = soundEnabled ? t('soundOn') : t('soundOff');
-            document.querySelector('.button:last-child').textContent = t('hint');
+            
+            // 更新统计信息标签
+            const timerLabel = document.querySelector('.timer .label');
+            if (timerLabel) timerLabel.textContent = t('timer') + ': ';
+            
+            const pairsLeftLabel = document.querySelector('.pairs-left .label');
+            if (pairsLeftLabel) pairsLeftLabel.textContent = t('pairsLeft') + ': ';
+            
+            const bestTimeLabel = document.querySelector('.best-time .label');
+            if (bestTimeLabel) bestTimeLabel.textContent = t('bestTime') + ': ';
+            
+            // 更新按钮文本
+            const backButton = document.querySelector('.back-button');
+            if (backButton) backButton.textContent = t('back');
+            
+            const restartButton = document.querySelector('.restart-button');
+            if (restartButton) restartButton.textContent = t('restart');
+            
+            const soundButton = document.getElementById('soundButton');
+            if (soundButton) soundButton.textContent = soundEnabled ? t('soundOn') : t('soundOff');
+            
+            const hintButton = document.querySelector('.button:last-child');
+            if (hintButton) hintButton.textContent = t('hint');
             
             // 更新游戏完成弹窗文本
             if (remainingPairs === 0) {
                 const finalTime = document.getElementById('timer').textContent;
                 const bestTime = localStorage.getItem('linkGameBestTime') || '--:--';
-                document.querySelector('.congrats-text').textContent = t('congrats', {
-                    time: finalTime,
-                    bestTime: bestTime
-                });
+                const congratsText = document.querySelector('.congrats-text');
+                if (congratsText) {
+                    congratsText.textContent = t('congrats', {
+                        time: finalTime,
+                        bestTime: bestTime
+                    });
+                }
             }
             
             // 更新所有提示文本
             const alerts = document.querySelectorAll('.alert-message');
             alerts.forEach(alert => {
-                if (alert.id === 'noPairsAlert') {
+                if (alert && alert.id === 'noPairsAlert') {
                     alert.textContent = t('noPairsLeft');
-                } else if (alert.id === 'loadFailedAlert') {
+                } else if (alert && alert.id === 'loadFailedAlert') {
                     alert.textContent = t('loadFailed');
-                } else if (alert.id === 'reshuffleAlert') {
+                } else if (alert && alert.id === 'reshuffleAlert') {
                     alert.textContent = t('reshufflePrompt');
                 }
             });
             
             // 更新所有按钮状态
             updateSoundButtonState();
+            
+            // 更新字符信息区域
+            const charInfo = document.getElementById('characterInfo');
+            if (charInfo && charInfo.style.display !== 'none') {
+                const currentChar = document.getElementById('char').textContent;
+                const currentPair = gameCharacters.find(c => c.char === currentChar)?.pair;
+                if (currentPair) {
+                    showCharacterInfo(currentPair, {char: currentChar});
+                }
+            }
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="screen-orientation" content="portrait">
     <meta name="x5-orientation" content="portrait">
     <meta name="msapplication-orientation" content="portrait">
+    <meta name="format-detection" content="telephone=no">
     <title>连连看模式 - 汉字大作战</title>
     <!-- 添加音效资源 -->
     <audio id="selectSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
@@ -106,13 +146,16 @@ Best Time: ${bestTime}',
         
         html {
             touch-action: manipulation;
+            height: -webkit-fill-available;
         }
         
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            min-height: -webkit-fill-available;
             padding: 20px;
+            overscroll-behavior: none; /* 防止iOS橡皮筋效果 */
         }
         
         .game-container {
@@ -200,6 +243,7 @@ Best Time: ${bestTime}',
             will-change: transform;
             min-width: 0;
             min-height: 0;
+            user-select: none; /* 防止文本选择 */
         }
         
         .cell:active::after {
@@ -210,8 +254,21 @@ Best Time: ${bestTime}',
             right: 0;
             bottom: 0;
             background: rgba(255,255,255,0.3);
-            border-radius: 8px;
+            border-radius: 4px;
             transition-delay: 0.05s;
+        }
+        
+        /* 移动端触摸反馈 */
+        @media (hover: none) {
+            .cell:hover {
+                transform: none;
+                background: #f8f9fa;
+            }
+            
+            .cell.touch-feedback {
+                background: #e9ecef;
+                transform: scale(1.05);
+            }
         }
         
         .cell:hover {
@@ -293,6 +350,15 @@ Best Time: ${bestTime}',
             font-size: 1em;
             touch-action: manipulation;
             position: relative;
+            user-select: none; /* 防止文本选择 */
+            -webkit-appearance: none; /* 移除iOS默认按钮样式 */
+            appearance: none; /* 标准属性 */
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+        
+        .button:active {
+            transform: scale(0.98);
         }
         
         .button::after {
@@ -326,7 +392,7 @@ Best Time: ${bestTime}',
         /* 移动设备优化 */
         @media (max-width: 500px) {
             body {
-                padding: 10px;
+                padding: 8px;
             }
             
             .game-container {
@@ -334,58 +400,86 @@ Best Time: ${bestTime}',
                 width: 100%;
                 max-width: none;
                 border-radius: 12px;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             }
             
             .grid {
-                gap: 1px;
-                max-height: 70vh;
+                gap: 2px;
+                max-height: 65vh;
+                margin-bottom: 10px;
             }
             
             .cell {
-                font-size: 1.2em;
+                font-size: 1.3em;
                 border-width: 1px;
             }
             
             .character {
-                font-size: 1.5em;
+                font-size: 1.8em;
             }
             
             .header {
                 margin-bottom: 10px;
             }
             
+            .timer {
+                font-size: 1.3em;
+            }
+            
+            .pairs-left, .best-time {
+                font-size: 1.1em;
+            }
+            
+            .stats {
+                margin-top: 8px;
+            }
+            
             .buttons {
                 flex-wrap: wrap;
-                gap: 6px;
-                margin-top: 15px;
+                gap: 8px;
+                margin-top: 12px;
+                justify-content: space-between;
             }
             
             .button {
                 flex: 1 0 45%;
-                padding: 10px 0;
-                font-size: 0.9em;
+                padding: 12px 0;
+                font-size: 1em;
                 min-width: 0;
+                margin-bottom: 5px;
+                border-radius: 8px;
             }
             
             .character-info {
-                grid-template-columns: 1fr;
                 gap: 10px;
-                margin-top: 15px;
+                margin-top: 12px;
             }
             
             .info-box {
-                padding: 8px;
+                padding: 10px;
+            }
+            
+            /* 改进触摸区域 */
+            .button::after {
+                content: '';
+                position: absolute;
+                top: -5px;
+                left: -5px;
+                right: -5px;
+                bottom: -5px;
             }
         }
         
         /* 超小屏幕优化 */
         @media (max-width: 350px) {
             .cell {
-                font-size: 1em;
+                font-size: 0.9em;
             }
             
             .grid {
                 gap: 1px;
+                grid-template-columns: repeat(8, 1fr);
+                grid-template-rows: repeat(8, 1fr);
             }
             
             .buttons {
@@ -395,6 +489,25 @@ Best Time: ${bestTime}',
             .button {
                 flex: 1 0 100%;
                 margin-bottom: 4px;
+                padding: 10px 0;
+            }
+            
+            .timer {
+                font-size: 1.1em;
+            }
+            
+            .pairs-left, .best-time {
+                font-size: 0.9em;
+            }
+        }
+        
+        /* 添加安全区域适配 */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(8px, env(safe-area-inset-left));
+                padding-right: max(8px, env(safe-area-inset-right));
+                padding-top: max(8px, env(safe-area-inset-top));
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
             }
         }
         
@@ -442,10 +555,10 @@ Best Time: ${bestTime}',
 <body>
     <div class="game-container">
         <div class="header">
-            <div class="timer"><span class="label">时间: </span><span id="timer">00:00</span></div>
-            <div class="pairs-left"><span class="label">剩余配对: </span><span id="pairsLeft">32</span></div>
+            <div class="timer"><span class="label"></span><span id="timer">00:00</span></div>
+            <div class="pairs-left"><span class="label"></span><span id="pairsLeft">32</span></div>
             <div class="stats">
-                <div class="best-time"><span class="label">最佳时间: </span><span id="bestTime">--:--</span></div>
+                <div class="best-time"><span class="label"></span><span id="bestTime">--:--</span></div>
             </div>
         </div>
         
@@ -460,10 +573,10 @@ Best Time: ${bestTime}',
         </div>
         
         <div class="buttons">
-            <button class="button back-button" onclick="goBack()">返回主页</button>
-            <button class="button restart-button" onclick="restartGame()">重新开始</button>
-            <button class="button sound-button" id="soundButton" onclick="toggleSound()">音效: 开</button>
-            <button class="button" onclick="showHint()">提示</button>
+            <button class="button back-button" onclick="goBack()"></button>
+            <button class="button restart-button" onclick="restartGame()"></button>
+            <button class="button sound-button" id="soundButton" onclick="toggleSound()"></button>
+            <button class="button" onclick="showHint()"></button>
         </div>
     </div>
 
@@ -471,7 +584,7 @@ Best Time: ${bestTime}',
         // 加载字符数据
         const characterData = JSON.parse(localStorage.getItem('characterData') || '[]');
         if (characterData.length === 0) {
-            alert('请先访问主页加载游戏数据');
+            alert(t('loadFailed'));
             window.location.href = 'index.html';
             throw new Error('游戏数据未加载'); // 使用throw代替return
         }
@@ -490,39 +603,170 @@ Best Time: ${bestTime}',
         document.addEventListener('DOMContentLoaded', function() {
             // 从localStorage读取语言设置
             currentLang = localStorage.getItem('language') || 'zh-CN';
+            // 确保语言代码格式一致
+            if (currentLang === 'zh' || currentLang === 'en') {
+                currentLang = currentLang === 'zh' ? 'zh-CN' : 'en-US';
+                localStorage.setItem('language', currentLang);
+            }
+            
+            // 禁用双击缩放
+            document.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // 禁用页面滚动，但允许网格内滚动
+            document.body.addEventListener('touchmove', function(e) {
+                if (e.target.closest('.grid')) return; // 允许网格内滚动
+                e.preventDefault();
+            }, { passive: false });
+            
+            // 处理屏幕方向变化
+            window.addEventListener('orientationchange', function() {
+                setTimeout(function() {
+                    window.scrollTo(0, 0);
+                }, 300);
+            });
+            
+            // 处理iOS键盘问题
+            const viewportHeight = window.innerHeight;
+            window.addEventListener('resize', function() {
+                if (window.innerHeight < viewportHeight) {
+                    // 键盘可能打开了，调整布局
+                    document.body.classList.add('keyboard-open');
+                } else {
+                    document.body.classList.remove('keyboard-open');
+                }
+            });
+            
+            // 处理设备返回按钮
+            window.addEventListener('popstate', function(e) {
+                e.preventDefault();
+                if (confirm(t('back'))) {
+                    goBack();
+                } else {
+                    history.pushState(null, document.title, window.location.href);
+                }
+            });
+            
+            // 添加历史状态，以便处理返回按钮
+            history.pushState(null, document.title, window.location.href);
+            
             initializeGame();
             updateSoundButton();
             updateBestTimeDisplay();
             addTouchSupport();
-            applyTranslations();
+            applyTranslations(); // 确保在页面加载时立即应用翻译
+            // 强制更新所有标签
+            document.querySelector('.timer .label').textContent = t('timer') + ': ';
+            document.querySelector('.pairs-left .label').textContent = t('pairsLeft') + ': ';
+            document.querySelector('.best-time .label').textContent = t('bestTime') + ': ';
+            document.querySelector('.back-button').textContent = t('back');
+            document.querySelector('.restart-button').textContent = t('restart');
+            document.querySelector('.button:last-child').textContent = t('hint');
+            updateSoundButtonState();
             
             // 监听语言变化
-            window.addEventListener('languageChanged', function() {
-                applyTranslations();
+            window.addEventListener('languageChanged', function(event) {
+                if (event.detail && event.detail.language) {
+                    currentLang = event.detail.language;
+                    // 强制使用标准格式
+                    if (currentLang !== 'zh-CN' && currentLang !== 'en-US') {
+                        currentLang = 'zh-CN'; // 默认值
+                    }
+                    applyTranslations();
+                }
             });
+            
+            // 添加屏幕唤醒锁，防止游戏过程中屏幕自动关闭
+            if ('wakeLock' in navigator) {
+                let wakeLock = null;
+                const requestWakeLock = async () => {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        console.log('屏幕唤醒锁已激活');
+                        
+                        wakeLock.addEventListener('release', () => {
+                            console.log('屏幕唤醒锁已释放');
+                        });
+                    } catch (err) {
+                        console.error(`无法获取屏幕唤醒锁: ${err.name}, ${err.message}`);
+                    }
+                };
+                
+                // 当页面可见时请求唤醒锁
+                document.addEventListener('visibilitychange', async () => {
+                    if (document.visibilityState === 'visible' && !wakeLock) {
+                        await requestWakeLock();
+                    }
+                });
+                
+                // 初始请求唤醒锁
+                if (document.visibilityState === 'visible') {
+                    requestWakeLock();
+                }
+            }
         });
         
         function addTouchSupport() {
             const cells = document.querySelectorAll('.cell');
+            const buttons = document.querySelectorAll('.button');
             
+            // 为格子添加触摸事件
             cells.forEach(cell => {
-                cell.addEventListener('touchstart', handleTouchStart, {passive: true});
-                cell.addEventListener('touchend', handleTouchEnd, {passive: true});
+                cell.addEventListener('touchstart', handleCellTouchStart, {passive: false});
+                cell.addEventListener('touchend', handleCellTouchEnd, {passive: false});
+                cell.addEventListener('touchcancel', handleCellTouchCancel, {passive: true});
             });
             
-            function handleTouchStart(e) {
-                e.preventDefault();
+            // 为按钮添加触摸反馈
+            buttons.forEach(button => {
+                button.addEventListener('touchstart', () => {
+                    button.style.transform = 'scale(0.98)';
+                }, {passive: true});
+                
+                button.addEventListener('touchend', () => {
+                    button.style.transform = '';
+                }, {passive: true});
+                
+                button.addEventListener('touchcancel', () => {
+                    button.style.transform = '';
+                }, {passive: true});
+            });
+            
+            function handleCellTouchStart(e) {
+                e.preventDefault(); // 防止滚动和缩放
                 const cell = e.currentTarget;
                 cell.classList.add('selected');
+                cell.classList.add('touch-feedback');
+                
+                // 添加触觉反馈 (如果设备支持)
+                if (window.navigator && window.navigator.vibrate) {
+                    window.navigator.vibrate(50);
+                }
             }
             
-            function handleTouchEnd(e) {
+            function handleCellTouchEnd(e) {
                 e.preventDefault();
                 const cell = e.currentTarget;
                 const index = parseInt(cell.dataset.index);
                 const charData = gameCharacters[index];
-                handleCellClick(index, charData);
+                
+                // 只有当触摸结束在元素内部时才触发点击
+                const touch = e.changedTouches[0];
+                const rect = cell.getBoundingClientRect();
+                if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                    touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                    handleCellClick(index, charData);
+                }
+                
                 cell.classList.remove('selected');
+                cell.classList.remove('touch-feedback');
+            }
+            
+            function handleCellTouchCancel(e) {
+                const cell = e.currentTarget;
+                cell.classList.remove('selected');
+                cell.classList.remove('touch-feedback');
             }
         }
         
