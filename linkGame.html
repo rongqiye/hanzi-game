@@ -17,7 +17,10 @@
                 'hint': '提示',
                 'congrats': '恭喜！游戏完成！\
 用时: ${time}\
-最佳时间: ${bestTime}'
+最佳时间: ${bestTime}',
+                'noPairsLeft': '没有可以连接的汉字对了，游戏结束！',
+                'loadFailed': '游戏数据加载失败，请返回主页重试',
+                'reshufflePrompt': '没有可以连接的汉字对了，要重新洗牌吗？'
             },
             'en-US': {
                 'title': 'Link Game - Chinese Characters',
@@ -31,7 +34,10 @@
                 'hint': 'Hint',
                 'congrats': 'Congratulations!\
 Time: ${time}\
-Best Time: ${bestTime}'
+Best Time: ${bestTime}',
+                'noPairsLeft': 'No more connectable pairs, game over!',
+                'loadFailed': 'Game data load failed, please return to home page',
+                'reshufflePrompt': 'No connectable pairs left, reshuffle the board?'
             }
         };
         
@@ -57,6 +63,16 @@ Best Time: ${bestTime}'
             document.querySelector('.restart-button').textContent = t('restart');
             document.getElementById('soundButton').textContent = soundEnabled ? t('soundOn') : t('soundOff');
             document.querySelector('.button:last-child').textContent = t('hint');
+            
+            // 更新游戏完成弹窗文本
+            if (remainingPairs === 0) {
+                const finalTime = document.getElementById('timer').textContent;
+                const bestTime = localStorage.getItem('linkGameBestTime') || '--:--';
+                document.querySelector('.congrats-text').textContent = t('congrats', {
+                    time: finalTime,
+                    bestTime: bestTime
+                });
+            }
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -672,15 +688,16 @@ Best Time: ${bestTime}'
                     showCelebration();
                     
                     setTimeout(() => {
-                        alert(`恭喜！游戏完成！
-用时: ${finalTime}
-最佳时间: ${bestTime}`);
+                        alert(t('congrats', {
+                    time: finalTime,
+                    bestTime: bestTime || '--:--'
+                }));
                     }, 1000);
                 } else {
                     // 检查游戏是否可以继续
                     setTimeout(() => {
                         if (!checkGameCanContinue()) {
-                            alert('没有可以连接的汉字对了，游戏结束！');
+                            alert(t('noPairsLeft'));
                             restartGame();
                         }
                     }, 500);
@@ -1190,7 +1207,7 @@ Best Time: ${bestTime}'
                 remainingPairs = 32;
                 initializeGame();
             } else {
-                alert('游戏数据加载失败，请返回主页重试');
+                alert(t('loadFailed'));
                 window.location.href = 'index.html';
             }
         }
@@ -1325,7 +1342,7 @@ Best Time: ${bestTime}'
         function checkAfterMatch() {
             if (remainingPairs > 0 && !checkGameCanContinue()) {
                 setTimeout(() => {
-                    if (confirm('没有可以连接的汉字对了，要重新洗牌吗？')) {
+                    if (confirm(t('reshufflePrompt'))) {
                         reshuffleBoard();
                     }
                 }, 500);

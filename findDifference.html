@@ -58,12 +58,26 @@ Please return to home page to reload data'
         
         function applyTranslations() {
             document.title = t('title');
-            document.querySelector('.header-label:nth-child(1)').textContent = t('time') + ':';
-            document.querySelector('.header-label:nth-child(2)').textContent = t('score') + ':';
-            document.querySelector('.header-label:nth-child(3)').textContent = t('level') + ':';
-            document.querySelector('.header-label:nth-child(4)').textContent = t('difficulty') + ':';
-            document.querySelector('.header-label:nth-child(5)').textContent = t('highScore') + ':';
+            
+            // 更新所有header标签
+            const headers = document.querySelectorAll('.header-label');
+            headers[0].textContent = t('time') + ':';
+            headers[1].textContent = t('score') + ':';
+            headers[2].textContent = t('level') + ':';
+            headers[3].textContent = t('difficulty') + ':';
+            headers[4].textContent = t('highScore') + ':';
+            
+            // 更新按钮文本
             document.querySelector('.back-button').textContent = t('back');
+            
+            // 更新难度级别名称
+            updateDifficultyDisplay();
+            
+            // 更新计时器显示
+            if (timerInterval) {
+                const timerElement = document.getElementById('timer');
+                timerElement.textContent = `${timer}${currentLang === 'zh-CN' ? '秒' : 's'}`;
+            }
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -620,7 +634,8 @@ Please return to home page to reload data'
             differentPosition = Math.floor(Math.random() * 64);
             
             // 显示当前关卡信息
-            document.getElementById('level').textContent = `关卡: ${currentLevel + 1}/${characterData.length}`;
+            document.getElementById('level').textContent = 
+                `${currentLang === 'zh-CN' ? '关卡' : 'Level'}: ${currentLevel + 1}/${characterData.length}`;
             
             // 更新难度级别显示
             updateDifficultyDisplay();
@@ -663,11 +678,11 @@ Please return to home page to reload data'
         function startTimer() {
             timer = 30;
             const timerElement = document.getElementById('timer');
-            timerElement.textContent = `${timer}秒`;
+            timerElement.textContent = `${timer}${currentLang === 'zh-CN' ? '秒' : 's'}`;
             
             timerInterval = setInterval(() => {
                 timer--;
-                timerElement.textContent = `${timer}秒`;
+                timerElement.textContent = `${timer}${currentLang === 'zh-CN' ? '秒' : 's'}`;
                 
                 if (timer <= 0) {
                     endGame(false);
@@ -732,7 +747,14 @@ Please return to home page to reload data'
             }
             
             // 应用当前难度
-            difficultyElement.textContent = currentDifficulty.name;
+            const difficultyNames = {
+                'entry': currentLang === 'zh-CN' ? '入门' : 'Entry',
+                'beginner': currentLang === 'zh-CN' ? '初级' : 'Beginner',
+                'intermediate': currentLang === 'zh-CN' ? '中级' : 'Intermediate',
+                'advanced': currentLang === 'zh-CN' ? '高级' : 'Advanced'
+            };
+            
+            difficultyElement.textContent = difficultyNames[currentDifficulty.class];
             difficultyElement.classList.add(currentDifficulty.class);
         }
 
