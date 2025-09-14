@@ -450,6 +450,8 @@ Best Time: ${bestTime}'
         
         // 初始化游戏
         document.addEventListener('DOMContentLoaded', function() {
+            // 从localStorage读取语言设置
+            currentLang = localStorage.getItem('language') || 'zh-CN';
             initializeGame();
             updateSoundButton();
             updateBestTimeDisplay();

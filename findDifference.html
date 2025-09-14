@@ -856,6 +856,9 @@ Please return to home page to reload data'
             }
         });
 
+        // 从localStorage读取语言设置
+        currentLang = localStorage.getItem('language') || 'zh-CN';
+        
         // 初始化游戏
         initializeGame();
         applyTranslations();
