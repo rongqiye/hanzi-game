@@ -56,9 +56,9 @@ Best Time: ${bestTime}',
         
         function applyTranslations() {
             document.title = t('title');
-            document.getElementById('timer').previousSibling.textContent = t('timer') + ': ';
-            document.getElementById('pairsLeft').previousSibling.textContent = t('pairsLeft') + ': ';
-            document.getElementById('bestTime').previousSibling.textContent = t('bestTime') + ': ';
+            document.querySelector('.timer .label').textContent = t('timer') + ': ';
+            document.querySelector('.pairs-left .label').textContent = t('pairsLeft') + ': ';
+            document.querySelector('.best-time .label').textContent = t('bestTime') + ': ';
             document.querySelector('.back-button').textContent = t('back');
             document.querySelector('.restart-button').textContent = t('restart');
             document.getElementById('soundButton').textContent = soundEnabled ? t('soundOn') : t('soundOff');
@@ -137,6 +137,14 @@ Best Time: ${bestTime}',
             color: #6c757d;
         }
         
+        .timer,
+        .pairs-left,
+        .best-time {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
         .timer {
             font-size: 1.5em;
             font-weight: bold;
@@ -146,6 +154,11 @@ Best Time: ${bestTime}',
         .pairs-left {
             font-size: 1.2em;
             color: #333;
+        }
+
+        .label {
+            font-size: 0.8em;
+            color: #666;
         }
         
         .grid {
@@ -420,10 +433,10 @@ Best Time: ${bestTime}',
 <body>
     <div class="game-container">
         <div class="header">
-            <div class="timer" id="timer">00:00</div>
-            <div class="pairs-left"><span id="pairsLeft">32</span></div>
+            <div class="timer"><span class="label">时间: </span><span id="timer">00:00</span></div>
+            <div class="pairs-left"><span class="label">剩余配对: </span><span id="pairsLeft">32</span></div>
             <div class="stats">
-                <div class="best-time"><span id="bestTime">--:--</span></div>
+                <div class="best-time"><span class="label">最佳时间: </span><span id="bestTime">--:--</span></div>
             </div>
         </div>
         

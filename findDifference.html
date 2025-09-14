@@ -78,6 +78,10 @@ Please return to home page to reload data'
                 const timerElement = document.getElementById('timer');
                 timerElement.textContent = `${timer}${currentLang === 'zh-CN' ? '秒' : 's'}`;
             }
+            
+            // 更新关卡显示
+            document.getElementById('level').textContent = 
+                `${t('level')}: ${currentLevel + 1}/${characterData.length}`;
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -530,23 +534,23 @@ Please return to home page to reload data'
     <div class="game-container">
         <div class="header">
             <div class="header-item">
-                <span class="header-label">时间:</span>
+                <span class="header-label"></span>
                 <span class="header-value" id="timer">30秒</span>
             </div>
             <div class="header-item">
-                <span class="header-label">分数:</span>
+                <span class="header-label"></span>
                 <span class="header-value" id="score">0</span>
             </div>
             <div class="header-item">
-                <span class="header-label">关卡:</span>
+                <span class="header-label"></span>
                 <span class="header-value" id="level">1/1</span>
             </div>
             <div class="header-item">
-                <span class="header-label">难度:</span>
+                <span class="header-label"></span>
                 <span class="header-value difficulty entry" id="difficulty">入门</span>
             </div>
             <div class="header-item high-score-item">
-                <span class="header-label">最高分:</span>
+                <span class="header-label"></span>
                 <span class="header-value" id="highScore">0</span>
             </div>
         </div>
