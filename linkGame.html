@@ -50,32 +50,72 @@ Best Time: ${bestTime}',
         }
         
         function applyTranslations() {
+            // 确保DOM完全加载
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', applyTranslations);
+                return;
+            }
+
             // 更新页面标题
             document.title = t('title');
             
-            // 更新统计信息标签（直接使用数组索引访问）
-            const labels = document.querySelectorAll('.label');
-            labels[0].textContent = t('timer') + ':';
-            labels[1].textContent = t('pairsLeft') + ':';
-            labels[2].textContent = t('bestTime') + ':';
+            // 更新统计信息标签（使用更可靠的选择器）
+            const timerLabel = document.querySelector('.timer .label');
+            const pairsLabel = document.querySelector('.pairs-left .label');
+            const bestTimeLabel = document.querySelector('.best-time .label');
             
-            // 更新按钮文本（直接使用数组索引访问）
-            const buttons = document.querySelectorAll('.button');
-            buttons[0].textContent = t('back');
-            buttons[1].textContent = t('restart');
-            buttons[2].textContent = soundEnabled ? t('soundOn') : t('soundOff');
-            buttons[3].textContent = t('hint');
+            if (timerLabel) timerLabel.textContent = t('timer') + ':';
+            if (pairsLabel) pairsLabel.textContent = t('pairsLeft') + ':';
+            if (bestTimeLabel) bestTimeLabel.textContent = t('bestTime') + ':';
             
+            // 更新按钮文本（使用ID确保准确性）
+            const backBtn = document.getElementById('backButton') || document.querySelector('.back-button');
+            const restartBtn = document.getElementById('restartButton') || document.querySelector('.restart-button');
+            const soundBtn = document.getElementById('soundButton');
+            const hintBtn = document.getElementById('hintButton') || document.querySelector('.button:last-child');
+            
+            if (backBtn) backBtn.textContent = t('back');
+            if (restartBtn) restartBtn.textContent = t('restart');
+            if (soundBtn) soundBtn.textContent = soundEnabled ? t('soundOn') : t('soundOff');
+            if (hintBtn) hintBtn.textContent = t('hint');
+            
+            // 强制更新所有文本元素
+            updateAllTextElements();
+        }
+
+        function updateAllTextElements() {
             // 更新游戏状态文本
             if (remainingPairs === 0) {
-                const finalTime = document.getElementById('timer').textContent || '00:00';
+                const finalTime = document.getElementById('timer')?.textContent || '00:00';
                 const bestTime = localStorage.getItem('linkGameBestTime') || '--:--';
-                document.querySelector('.congrats-text').textContent = 
-                    t('congrats', { time: finalTime, bestTime: bestTime });
+                const congratsText = document.querySelector('.congrats-text');
+                if (congratsText) {
+                    congratsText.textContent = t('congrats', {
+                        time: finalTime,
+                        bestTime: bestTime
+                    });
+                }
             }
             
-            // 更新按钮状态
-            updateSoundButtonState();
+            // 更新提示文本
+            const updateAlert = (id, key) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = t(key);
+            };
+            
+            updateAlert('noPairsAlert', 'noPairsLeft');
+            updateAlert('loadFailedAlert', 'loadFailed');
+            updateAlert('reshuffleAlert', 'reshufflePrompt');
+            
+            // 更新字符信息区域
+            const charInfo = document.getElementById('characterInfo');
+            if (charInfo && charInfo.style.display !== 'none') {
+                const currentChar = document.getElementById('char')?.textContent;
+                if (currentChar) {
+                    const currentPair = gameCharacters.find(c => c.char === currentChar)?.pair;
+                    if (currentPair) showCharacterInfo(currentPair, {char: currentChar});
+                }
+            }
         }
 
         function updateAllTextElements() {
