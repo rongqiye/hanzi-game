@@ -485,10 +485,20 @@
     </div>
 
     <script>
-        // 触摸事件处理已在CSS中实现
-        
         // 显示加载动画
-        document.getElementById('loading').style.display = 'flex';
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loading').style.display = 'flex';
+            
+            // 确保加载完成后隐藏动画
+            window.addEventListener('load', function() {
+                document.getElementById('loading').style.display = 'none';
+            });
+            
+            // 超时保护 - 5秒后强制隐藏
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+            }, 5000);
+        });
         
         // 语言和音效控制
         let currentLanguage = localStorage.getItem('language') || 'zh';
