@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>连连看模式 - 汉字大作战</title>
+    <!-- 添加音效资源 -->
+    <audio id="selectSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+    <audio id="matchSound" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto"></audio>
+    <audio id="noMatchSound" src="https://assets.mixkit.co/active_storage/sfx/2001/2001-preview.mp3" preload="auto"></audio>
+    <audio id="completeSound" src="https://assets.mixkit.co/active_storage/sfx/1997/1997-preview.mp3" preload="auto"></audio>
+    <audio id="connectSound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3" preload="auto"></audio>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            touch-action: manipulation;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: 0 auto;
+            overflow: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .best-time {
+            font-size: 1.2em;
+            color: #6c757d;
+        }
+        
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4834d4;
+        }
+        
+        .pairs-left {
+            font-size: 1.2em;
+            color: #333;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .cell:active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 8px;
+            transition-delay: 0.05s;
+        }
+        
+        .cell:hover {
+            background: #e9ecef;
+            transform: scale(1.05);
+        }
+        
+        .cell.selected {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+            transform: scale(1.1);
+        }
+        
+        .cell.matched {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .connection-line {
+            position: absolute;
+            background-color: rgba(72, 52, 212, 0.6);
+            z-index: 10;
+            pointer-events: none;
+            border-radius: 2px;
+            animation: fadeOut 1s forwards;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .character-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .character {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .pinyin {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .meaning {
+            font-size: 0.9em;
+            color: #888;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .button {
+            padding: 12px 0;
+            min-width: 100px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            touch-action: manipulation;
+            position: relative;
+        }
+        
+        .button::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+        }
+        
+        .back-button {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .restart-button {
+            background: #4834d4;
+            color: white;
+        }
+        
+        .sound-button {
+            background: #28a745;
+            color: white;
+        }
+        
+        .sound-button.off {
+            background: #dc3545;
+        }
+        
+        /* 移动设备优化 */
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 15px;
+                width: 95%;
+                max-width: none;
+            }
+            
+            .cell {
+                font-size: 1.5em;
+            }
+            
+            .grid {
+                gap: 2px;
+            }
+            
+            .character {
+                font-size: 2em;
+            }
+            
+            .buttons {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .button {
+                flex: 1 0 40%;
+                margin-bottom: 0;
+                padding: 12px 0;
+                min-width: 0;
+            }
+        }
+        
+        /* 横屏模式优化 */
+        @media (orientation: landscape) {
+            .game-container {
+                max-width: 90vh;
+                margin: 10px auto;
+            }
+            
+            .grid {
+                grid-template-columns: repeat(10, 1fr);
+                grid-template-rows: repeat(6, 1fr);
+            }
+            
+            .buttons {
+                margin-top: 10px;
+            }
+        }
+        
+        /* 完成游戏时的庆祝动画 */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            will-change: transform, opacity;
+            animation: fall 3s linear forwards;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        /* 提示动画 */
+        .hint-animation {
+            animation: pulse 0.5s infinite;
+            z-index: 5;
+            box-shadow: 0 0 15px gold;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="timer" id="timer">00:00</div>
+            <div class="pairs-left">剩余配对: <span id="pairsLeft">32</span></div>
+            <div class="stats">
+                <div class="best-time">最佳时间: <span id="bestTime">--:--</span></div>
+            </div>
+        </div>
+        
+        <div class="grid" id="grid"></div>
+        
+        <div class="character-info" id="characterInfo" style="display: none;">
+            <div class="info-box">
+                <div class="character" id="char1"></div>
+                <div class="pinyin" id="pinyin1"></div>
+                <div class="meaning" id="meaning1"></div>
+            </div>
+            <div class="info-box">
+                <div class="character" id="char2"></div>
+                <div class="pinyin" id="pinyin2"></div>
+                <div class="meaning" id="meaning2"></div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="button back-button" onclick="goBack()">返回主页</button>
+            <button class="button restart-button" onclick="restartGame()">重新开始</button>
+            <button class="button sound-button" id="soundButton" onclick="toggleSound()">音效: 开</button>
+            <button class="button" onclick="showHint()">提示</button>
+        </div>
+    </div>
+
+    <script>
+        // 加载字符数据
+        const characterData = JSON.parse(localStorage.getItem('characterData') || '[]');
+        if (characterData.length === 0) {
+            alert('请先访问主页加载游戏数据');
+            window.location.href = 'index.html';
+            throw new Error('游戏数据未加载'); // 使用throw代替return
+        }
+        
+        let gameCharacters = [];
+        let selectedCells = [];
+        let startTime = null;
+        let timerInterval = null;
+        let remainingPairs = 32; // 8对汉字，每对2个字符，每个字符出现4次，共32对需要匹配
+        let bestTime = localStorage.getItem('linkGameBestTime') || null;
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false'; // 默认开启音效
+        let hintTimeout = null;
+        let connectionLines = [];
+        
+        // 初始化游戏
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGame();
+            updateSoundButton();
+            updateBestTimeDisplay();
+            addTouchSupport();
+        });
+        
+        function addTouchSupport() {
+            const cells = document.querySelectorAll('.cell');
+            
+            cells.forEach(cell => {
+                cell.addEventListener('touchstart', handleTouchStart, {passive: true});
+                cell.addEventListener('touchend', handleTouchEnd, {passive: true});
+            });
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const cell = e.currentTarget;
+                cell.classList.add('selected');
+            }
+            
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                const cell = e.currentTarget;
+                const index = parseInt(cell.dataset.index);
+                const charData = gameCharacters[index];
+                handleCellClick(index, charData);
+                cell.classList.remove('selected');
+            }
+        }
+        
+        // 更新音效按钮状态
+        updateSoundButtonState();
+        
+        // 显示最佳时间
+        if (bestTime) {
+            document.getElementById('bestTime').textContent = bestTime;
+        }
+
+        function initializeGame() {
+            if (characterData.length === 0) {
+                alert('游戏数据加载失败，请返回主页重试');
+                return;
+            }
+            
+            // 复制字符数据以避免修改原数组
+            const availablePairs = [...characterData];
+            
+            // 随机选择汉字对
+            const selectedPairs = [];
+            
+            // 如果数据足够，选择8对不同的汉字
+            if (availablePairs.length >= 8) {
+                while (selectedPairs.length < 8) {
+                    const randomIndex = Math.floor(Math.random() * availablePairs.length);
+                    const pair = availablePairs.splice(randomIndex, 1)[0];
+                    selectedPairs.push(pair);
+                }
+            } else {
+                // 如果数据不足8对，先添加所有可用的对
+                while (availablePairs.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * availablePairs.length);
+                    const pair = availablePairs.splice(randomIndex, 1)[0];
+                    selectedPairs.push(pair);
+                }
+                
+                // 然后重复使用已选择的对，直到达到8对
+                const originalPairs = [...selectedPairs];
+                while (selectedPairs.length < 8) {
+                    const randomIndex = Math.floor(Math.random() * originalPairs.length);
+                    selectedPairs.push({...originalPairs[randomIndex]});
+                }
+            }
+            
+            console.log(`已选择 ${selectedPairs.length} 对汉字用于游戏`);
+            
+            // 创建游戏字符数组（每个字符出现4次，共64个字符）
+            gameCharacters = [];
+            selectedPairs.forEach(pair => {
+                // 每个字符添加4次（char1和char2各4次）
+                for (let i = 0; i < 4; i++) {
+                    gameCharacters.push({ char: pair.char1, pair: pair, pairId: pair.char1 + pair.char2 });
+                    gameCharacters.push({ char: pair.char2, pair: pair, pairId: pair.char1 + pair.char2 });
+                }
+            });
+            
+            // 确保生成了64个字符
+            console.log(`生成了 ${gameCharacters.length} 个游戏字符`);
+            if (gameCharacters.length !== 64) {
+                console.warn(`警告：生成的字符数量不是64个，而是 ${gameCharacters.length} 个`);
+                
+                // 如果字符不足64个，复制现有字符直到达到64个
+                const originalChars = [...gameCharacters];
+                while (gameCharacters.length < 64) {
+                    const randomIndex = Math.floor(Math.random() * originalChars.length);
+                    gameCharacters.push({...originalChars[randomIndex]});
+                }
+            }
+            
+            // 打乱顺序
+            for (let i = gameCharacters.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameCharacters[i], gameCharacters[j]] = [gameCharacters[j], gameCharacters[i]];
+            }
+            
+            createGrid();
+            startTimer();
+            document.getElementById('pairsLeft').textContent = remainingPairs;
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            // 创建64个格子，每个格子都有字符
+            gameCharacters.forEach((charData, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = charData.char;
+                cell.dataset.index = index;
+                cell.onclick = () => handleCellClick(index, charData);
+                grid.appendChild(cell);
+            });
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function handleCellClick(index, charData) {
+            const cells = document.querySelectorAll('.cell');
+            const cell = cells[index];
+            
+            // 所有格子都有字符，不需要忽略任何点击
+            
+            if (cell.classList.contains('matched')) return;
+            
+            // 清除提示效果
+            clearHintEffect();
+            
+            if (selectedCells.length === 0) {
+                // 第一次选择
+                selectedCells.push({ index, charData });
+                cell.classList.add('selected');
+                
+                // 播放选择音效
+                if (soundEnabled) {
+                    document.getElementById('selectSound').play();
+                }
+            } else if (selectedCells.length === 1) {
+                // 第二次选择
+                if (selectedCells[0].index === index) return; // 不能选择同一个单元格
+                
+                selectedCells.push({ index, charData });
+                cell.classList.add('selected');
+                
+                // 播放选择音效
+                if (soundEnabled) {
+                    document.getElementById('selectSound').play();
+                }
+                
+                setTimeout(() => checkMatch(), 500);
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = selectedCells;
+            const cells = document.querySelectorAll('.cell');
+            
+            if (first.charData.char === second.charData.char && canConnect(first.index, second.index)) {
+                // 匹配成功
+                cells[first.index].classList.add('matched');
+                cells[second.index].classList.add('matched');
+                
+                // 播放匹配成功音效
+                if (soundEnabled) {
+                    document.getElementById('matchSound').play();
+                }
+                
+                // 显示连接线
+                drawConnectionLine(first.index, second.index);
+                
+                // 显示汉字信息（传入当前选中的字符）
+                showCharacterInfo(first.charData.pair, first.charData);
+                
+                remainingPairs--;
+                document.getElementById('pairsLeft').textContent = remainingPairs;
+                
+                if (remainingPairs === 0) {
+                    // 游戏完成
+                    const finalTime = document.getElementById('timer').textContent;
+                    
+                    // 检查是否是最佳时间
+                    if (!bestTime || compareTimes(finalTime, bestTime) < 0) {
+                        bestTime = finalTime;
+                        localStorage.setItem('linkGameBestTime', bestTime);
+                        document.getElementById('bestTime').textContent = bestTime;
+                    }
+                    
+                    // 停止计时器
+                    clearInterval(timerInterval);
+                    
+                    // 播放完成音效
+                    if (soundEnabled) {
+                        document.getElementById('completeSound').play();
+                    }
+                    
+                    // 显示庆祝动画
+                    showCelebration();
+                    
+                    setTimeout(() => {
+                        alert(`恭喜！游戏完成！
+用时: ${finalTime}
+最佳时间: ${bestTime}`);
+                    }, 1000);
+                } else {
+                    // 检查游戏是否可以继续
+                    setTimeout(() => {
+                        if (!checkGameCanContinue()) {
+                            alert('没有可以连接的汉字对了，游戏结束！');
+                            restartGame();
+                        }
+                    }, 500);
+                }
+            } else {
+                // 匹配失败
+                cells[first.index].classList.remove('selected');
+                cells[second.index].classList.remove('selected');
+                
+                // 播放匹配失败音效
+                if (soundEnabled) {
+                    document.getElementById('noMatchSound').play();
+                }
+            }
+            
+            selectedCells = [];
+        }
+        
+        // 比较两个时间字符串 (mm:ss 格式)
+        function compareTimes(time1, time2) {
+            const [min1, sec1] = time1.split(':').map(Number);
+            const [min2, sec2] = time2.split(':').map(Number);
+            
+            const totalSec1 = min1 * 60 + sec1;
+            const totalSec2 = min2 * 60 + sec2;
+            
+            return totalSec1 - totalSec2;
+        }
+        
+        // 绘制连接线（带拐点的路径）
+        function drawConnectionLine(index1, index2) {
+            const cells = document.querySelectorAll('.cell');
+            
+            // 获取网格状态
+            const gridState = Array.from(document.querySelectorAll('.cell'))
+                .map((cell, idx) => ({
+                    index: idx,
+                    isEmpty: cell.classList.contains('matched'),
+                    row: Math.floor(idx / 8),
+                    col: idx % 8
+                }));
+            
+            const pos1 = gridState[index1];
+            const pos2 = gridState[index2];
+            
+            // 获取连接路径（确保路径不会穿过未匹配的字符）
+            const path = getConnectionPath(pos1, pos2, gridState);
+            if (!path) return;
+            
+            // 创建SVG容器
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.pointerEvents = 'none';
+            svg.style.zIndex = '10';
+            
+            // 创建路径元素
+            const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            pathElement.setAttribute('stroke', 'rgba(72, 52, 212, 0.8)');
+            pathElement.setAttribute('stroke-width', '2');
+            pathElement.setAttribute('fill', 'none');
+            pathElement.setAttribute('stroke-linecap', 'round');
+            
+            // 构建路径数据 - 只使用水平和垂直线段
+            let pathData = '';
+            const gridRect = document.getElementById('grid').getBoundingClientRect();
+            const cellSize = gridRect.width / 8;
+            
+            // 确保路径点是按顺序连接的，且只有水平和垂直线段
+            for (let i = 0; i < path.length; i++) {
+                const point = path[i];
+                const x = point.col * cellSize + cellSize/2 + gridRect.left;
+                const y = point.row * cellSize + cellSize/2 + gridRect.top;
+                
+                if (i === 0) {
+                    pathData += `M ${x} ${y}`;
+                } else {
+                    const prevPoint = path[i-1];
+                    
+                    // 如果不是水平或垂直，则添加一个拐点
+                    if (prevPoint.row !== point.row && prevPoint.col !== point.col) {
+                        // 计算拐点坐标
+                        const cornerX = prevPoint.col * cellSize + cellSize/2 + gridRect.left;
+                        const cornerY = point.row * cellSize + cellSize/2 + gridRect.top;
+                        
+                        // 添加拐点
+                        pathData += ` L ${cornerX} ${cornerY}`;
+                    }
+                    
+                    // 添加当前点
+                    pathData += ` L ${x} ${y}`;
+                }
+            }
+            
+            pathElement.setAttribute('d', pathData);
+            svg.appendChild(pathElement);
+            
+            // 添加闪电特效
+            const addLightningEffect = (x, y) => {
+                const lightning = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                lightning.setAttribute('cx', x);
+                lightning.setAttribute('cy', y);
+                lightning.setAttribute('r', cellSize/4);
+                lightning.setAttribute('fill', '#f39c12');
+                lightning.setAttribute('stroke', '#e67e22');
+                lightning.setAttribute('stroke-width', '3');
+                
+                // 添加动画
+                const animate = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                animate.setAttribute('attributeName', 'r');
+                animate.setAttribute('from', cellSize/6);
+                animate.setAttribute('to', cellSize/3);
+                animate.setAttribute('dur', '0.5s');
+                animate.setAttribute('repeatCount', '2');
+                lightning.appendChild(animate);
+                
+                svg.appendChild(lightning);
+            };
+            
+            // 在起点和终点添加闪电特效
+            const startX = path[0].col * cellSize + cellSize/2 + gridRect.left;
+            const startY = path[0].row * cellSize + cellSize/2 + gridRect.top;
+            const endX = path[path.length-1].col * cellSize + cellSize/2 + gridRect.left;
+            const endY = path[path.length-1].row * cellSize + cellSize/2 + gridRect.top;
+            
+            addLightningEffect(startX, startY);
+            addLightningEffect(endX, endY);
+            
+            document.body.appendChild(svg);
+            
+            // 播放连接音效
+            if (soundEnabled) {
+                document.getElementById('connectSound').play();
+            }
+            
+            // 1秒后移除连接线
+            setTimeout(() => {
+                svg.remove();
+            }, 1000);
+            
+            connectionLines.push(svg);
+        }
+        
+        // 严格检查路径是否穿过未匹配的字符
+        function isPathClear(start, end, gridState) {
+            // 连连看只允许水平或垂直连接，不允许斜线
+            // 确保起点和终点在同一行或同一列
+            if (start.row !== end.row && start.col !== end.col) {
+                return false; // 不在同一行也不在同一列，不允许连接
+            }
+            
+            // 同行
+            if (start.row === end.row) {
+                const minCol = Math.min(start.col, end.col);
+                const maxCol = Math.max(start.col, end.col);
+                
+                for (let col = minCol + 1; col < maxCol; col++) {
+                    const pos = {row: start.row, col: col};
+                    // 检查路径上的点是否为空（已匹配或在边界外）
+                    if (!isPositionEmpty(pos, gridState)) {
+                        console.log(`路径被阻挡: 行${start.row}列${col}不为空`);
+                        return false;
+                    }
+                }
+                return true;
+            } 
+            // 同列
+            else if (start.col === end.col) {
+                const minRow = Math.min(start.row, end.row);
+                const maxRow = Math.max(start.row, end.row);
+                
+                for (let row = minRow + 1; row < maxRow; row++) {
+                    const pos = {row: row, col: start.col};
+                    // 检查路径上的点是否为空（已匹配或在边界外）
+                    if (!isPositionEmpty(pos, gridState)) {
+                        console.log(`路径被阻挡: 行${row}列${start.col}不为空`);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // 修改判断位置是否为空的方法
+        function isPositionEmpty(pos, gridState) {
+            // 网格外区域视为可通行
+            if (pos.row < 0 || pos.row >= 8 || pos.col < 0 || pos.col >= 8) {
+                return true;
+            }
+            
+            // 确保索引在有效范围内
+            const idx = pos.row * 8 + pos.col;
+            if (idx < 0 || idx >= gridState.length) {
+                return true; // 超出范围视为可通行
+            }
+            
+            // 检查该位置是否为空（已匹配）
+            const isEmpty = gridState[idx].isEmpty;
+            
+            // 调试输出
+            if (!isEmpty) {
+                console.log(`位置 (${pos.row}, ${pos.col}) 不为空`);
+            }
+            
+            return isEmpty;
+        }
+
+        // 计算路径长度
+        function calculatePathLength(path) {
+            let length = 0;
+            for (let i = 1; i < path.length; i++) {
+                const dx = path[i].col - path[i-1].col;
+                const dy = path[i].row - path[i-1].row;
+                length += Math.abs(dx) + Math.abs(dy); // 使用曼哈顿距离，更适合网格移动
+            }
+            return length;
+        }
+
+        // 获取连接路径（支持最多3个拐点）
+        function getConnectionPath(pos1, pos2, gridState) {
+            // 存储所有可能的路径
+            const allPaths = [];
+            
+            // 直线连接
+            if (canConnectDirect(pos1, pos2, gridState)) {
+                allPaths.push([pos1, pos2]);
+            }
+            
+            // 1拐点连接
+            const corner1 = { row: pos1.row, col: pos2.col };
+            const corner2 = { row: pos2.row, col: pos1.col };
+            
+            if (isPositionEmpty(corner1, gridState) && 
+                canConnectDirect(pos1, corner1, gridState) && 
+                canConnectDirect(corner1, pos2, gridState)) {
+                allPaths.push([pos1, corner1, pos2]);
+            }
+            
+            if (isPositionEmpty(corner2, gridState) && 
+                canConnectDirect(pos1, corner2, gridState) && 
+                canConnectDirect(corner2, pos2, gridState)) {
+                allPaths.push([pos1, corner2, pos2]);
+            }
+            
+            // 2拐点连接
+            for (let col = -1; col <= 8; col++) {
+                if (col === pos1.col || col === pos2.col) continue;
+                
+                const corner1 = { row: pos1.row, col };
+                const corner2 = { row: pos2.row, col };
+                
+                if (isPositionEmpty(corner1, gridState) && 
+                    isPositionEmpty(corner2, gridState) && 
+                    canConnectDirect(pos1, corner1, gridState) &&
+                    canConnectDirect(corner1, corner2, gridState) &&
+                    canConnectDirect(corner2, pos2, gridState)) {
+                    allPaths.push([pos1, corner1, corner2, pos2]);
+                }
+            }
+            
+            for (let row = -1; row <= 8; row++) {
+                if (row === pos1.row || row === pos2.row) continue;
+                
+                const corner1 = { row, col: pos1.col };
+                const corner2 = { row, col: pos2.col };
+                
+                if (isPositionEmpty(corner1, gridState) && 
+                    isPositionEmpty(corner2, gridState) && 
+                    canConnectDirect(pos1, corner1, gridState) &&
+                    canConnectDirect(corner1, corner2, gridState) &&
+                    canConnectDirect(corner2, pos2, gridState)) {
+                    allPaths.push([pos1, corner1, corner2, pos2]);
+                }
+            }
+            
+            // 3拐点连接
+            for (let col1 = -1; col1 <= 8; col1++) {
+                if (col1 === pos1.col || col1 === pos2.col) continue;
+                
+                for (let col2 = -1; col2 <= 8; col2++) {
+                    if (col2 === pos1.col || col2 === pos2.col || col1 === col2) continue;
+                    
+                    const corner1 = { row: pos1.row, col: col1 };
+                    const corner2 = { row: pos2.row, col: col1 };
+                    const corner3 = { row: pos1.row, col: col2 };
+                    const corner4 = { row: pos2.row, col: col2 };
+                    
+                    // 路径1: pos1 -> corner1 -> corner3 -> corner2 -> pos2
+                    if (isPositionEmpty(corner1, gridState) && 
+                        isPositionEmpty(corner3, gridState) && 
+                        isPositionEmpty(corner2, gridState) && 
+                        canConnectDirect(pos1, corner1, gridState) &&
+                        canConnectDirect(corner1, corner3, gridState) &&
+                        canConnectDirect(corner3, corner2, gridState) &&
+                        canConnectDirect(corner2, pos2, gridState)) {
+                        allPaths.push([pos1, corner1, corner3, corner2, pos2]);
+                    }
+                    
+                    // 路径2: pos1 -> corner1 -> corner4 -> corner2 -> pos2
+                    if (isPositionEmpty(corner1, gridState) && 
+                        isPositionEmpty(corner4, gridState) && 
+                        isPositionEmpty(corner2, gridState) && 
+                        canConnectDirect(pos1, corner1, gridState) &&
+                        canConnectDirect(corner1, corner4, gridState) &&
+                        canConnectDirect(corner4, corner2, gridState) &&
+                        canConnectDirect(corner2, pos2, gridState)) {
+                        allPaths.push([pos1, corner1, corner4, corner2, pos2]);
+                    }
+                }
+            }
+            
+            for (let row1 = -1; row1 <= 8; row1++) {
+                if (row1 === pos1.row || row1 === pos2.row) continue;
+                
+                for (let row2 = -1; row2 <= 8; row2++) {
+                    if (row2 === pos1.row || row2 === pos2.row || row1 === row2) continue;
+                    
+                    const corner1 = { row: row1, col: pos1.col };
+                    const corner2 = { row: row1, col: pos2.col };
+                    const corner3 = { row: row2, col: pos1.col };
+                    const corner4 = { row: row2, col: pos2.col };
+                    
+                    // 路径3: pos1 -> corner1 -> corner3 -> corner2 -> pos2
+                    if (isPositionEmpty(corner1, gridState) && 
+                        isPositionEmpty(corner3, gridState) && 
+                        isPositionEmpty(corner2, gridState) && 
+                        canConnectDirect(pos1, corner1, gridState) &&
+                        canConnectDirect(corner1, corner3, gridState) &&
+                        canConnectDirect(corner3, corner2, gridState) &&
+                        canConnectDirect(corner2, pos2, gridState)) {
+                        allPaths.push([pos1, corner1, corner3, corner2, pos2]);
+                    }
+                    
+                    // 路径4: pos1 -> corner1 -> corner4 -> corner2 -> pos2
+                    if (isPositionEmpty(corner1, gridState) && 
+                        isPositionEmpty(corner4, gridState) && 
+                        isPositionEmpty(corner2, gridState) && 
+                        canConnectDirect(pos1, corner1, gridState) &&
+                        canConnectDirect(corner1, corner4, gridState) &&
+                        canConnectDirect(corner4, corner2, gridState) &&
+                        canConnectDirect(corner2, pos2, gridState)) {
+                        allPaths.push([pos1, corner1, corner4, corner2, pos2]);
+                    }
+                }
+            }
+            
+            // 如果没有找到路径，返回null
+            if (allPaths.length === 0) {
+                return null;
+            }
+            
+            // 按拐点数量和路径长度排序
+            allPaths.sort((a, b) => {
+                // 首先按拐点数量排序
+                const turnsA = a.length - 2;
+                const turnsB = b.length - 2;
+                
+                if (turnsA !== turnsB) {
+                    return turnsA - turnsB; // 优先拐点少的
+                } else {
+                    // 拐点相同则比较路径长度
+                    return calculatePathLength(a) - calculatePathLength(b);
+                }
+            });
+            
+            // 调试输出
+            console.log("找到的最佳路径:", allPaths[0]);
+            debugPath(allPaths[0], gridState);
+            
+            // 返回最优路径
+            return allPaths[0];
+        }
+        
+        // 显示庆祝动画
+        function showCelebration() {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            document.body.appendChild(celebration);
+            
+            // 创建50个彩色碎片
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = getRandomColor();
+                confetti.style.animationDuration = `${2 + Math.random() * 2}s`;
+                confetti.style.width = `${5 + Math.random() * 10}px`;
+                confetti.style.height = `${5 + Math.random() * 10}px`;
+                celebration.appendChild(confetti);
+            }
+            
+            // 3秒后移除庆祝动画
+            setTimeout(() => {
+                celebration.remove();
+            }, 3000);
+        }
+        
+        // 获取随机颜色
+        function getRandomColor() {
+            const colors = ['#ff6b6b', '#4834d4', '#28a745', '#ffc107', '#17a2b8', '#6c757d'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function canConnect(index1, index2) {
+            // 获取网格状态 (0-63)
+            const gridState = Array.from(document.querySelectorAll('.cell'))
+                .map((cell, idx) => ({
+                    index: idx,
+                    isEmpty: cell.classList.contains('matched'),
+                    row: Math.floor(idx / 8),
+                    col: idx % 8
+                }));
+            
+            const pos1 = gridState[index1];
+            const pos2 = gridState[index2];
+            
+            // 首先检查是否是相同的字符
+            if (gameCharacters[index1].char !== gameCharacters[index2].char) {
+                return false;
+            }
+            
+            // 使用getConnectionPath检查是否可以连接
+            const path = getConnectionPath(pos1, pos2, gridState);
+            return path !== null;
+        }
+
+        // 删除重复的函数，使用getConnectionPath中的逻辑
+
+        // 删除重复的函数，使用getConnectionPath中的逻辑
+
+        // 判断位置是否在网格边界上或网格外
+        function isOnBorder(pos) {
+            // 允许在网格外一格连接
+            return pos.row < 0 || pos.row >= 8 || pos.col < 0 || pos.col >= 8;
+        }
+
+        function canConnectDirect(pos1, pos2, gridState) {
+            // 使用统一的路径检查逻辑
+            return isPathClear(pos1, pos2, gridState);
+        }
+        
+        // 调试函数：打印路径信息
+        function debugPath(path, gridState) {
+            console.log("路径点:", path);
+            
+            // 打印网格状态
+            let gridMap = Array(8).fill().map(() => Array(8).fill('.'));
+            
+            // 标记所有非空格子
+            for (let i = 0; i < 64; i++) {
+                const row = Math.floor(i / 8);
+                const col = i % 8;
+                if (!gridState[i].isEmpty) {
+                    gridMap[row][col] = 'X';
+                }
+            }
+            
+            // 标记路径
+            path.forEach((point, idx) => {
+                if (point.row >= 0 && point.row < 8 && point.col >= 0 && point.col < 8) {
+                    gridMap[point.row][point.col] = idx.toString();
+                }
+            });
+            
+            // 打印网格
+            console.log("网格状态 (X=非空, 数字=路径点):");
+            gridMap.forEach(row => console.log(row.join(' ')));
+        }
+
+        // 删除重复的函数定义
+
+        function showCharacterInfo(pair, charData) {
+            document.getElementById('characterInfo').style.display = 'grid';
+            
+            // 显示当前选中字符的信息（两个框显示相同内容）
+            if (charData.char === pair.char1) {
+                document.getElementById('char1').textContent = pair.char1;
+                document.getElementById('pinyin1').textContent = pair.pinyin1;
+                document.getElementById('meaning1').textContent = pair.meaning1;
+                document.getElementById('char2').textContent = pair.char1;
+                document.getElementById('pinyin2').textContent = pair.pinyin1;
+                document.getElementById('meaning2').textContent = pair.meaning1;
+            } else {
+                document.getElementById('char1').textContent = pair.char2;
+                document.getElementById('pinyin1').textContent = pair.pinyin2;
+                document.getElementById('meaning1').textContent = pair.meaning2;
+                document.getElementById('char2').textContent = pair.char2;
+                document.getElementById('pinyin2').textContent = pair.pinyin2;
+                document.getElementById('meaning2').textContent = pair.meaning2;
+            }
+            
+            // 详情框不再自动隐藏
+        }
+
+        function restartGame() {
+            clearInterval(timerInterval);
+            selectedCells = [];
+            document.getElementById('characterInfo').style.display = 'none';
+            
+            // 清除所有连接线
+            connectionLines.forEach(line => line.remove());
+            connectionLines = [];
+            
+            // 清除提示效果
+            clearHintEffect();
+            
+            // 重新加载字符数据
+            const freshData = JSON.parse(localStorage.getItem('characterData') || '[]');
+            if (freshData.length > 0) {
+                remainingPairs = 32;
+                initializeGame();
+            } else {
+                alert('游戏数据加载失败，请返回主页重试');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+        
+        // 切换音效
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            updateSoundButtonState();
+        }
+        
+        // 更新音效按钮状态
+        function updateSoundButtonState() {
+            const soundButton = document.getElementById('soundButton');
+            if (soundEnabled) {
+                soundButton.textContent = '音效: 开';
+                soundButton.classList.remove('off');
+            } else {
+                soundButton.textContent = '音效: 关';
+                soundButton.classList.add('off');
+            }
+        }
+        
+        // 显示提示
+        // 检查游戏是否可以继续
+        function checkGameCanContinue() {
+            const cells = document.querySelectorAll('.cell');
+            const availableCells = Array.from(cells).filter(cell => !cell.classList.contains('matched'));
+            
+            // 检查所有未匹配的字符对
+            for (let i = 0; i < availableCells.length; i++) {
+                for (let j = i + 1; j < availableCells.length; j++) {
+                    const index1 = parseInt(availableCells[i].dataset.index);
+                    const index2 = parseInt(availableCells[j].dataset.index);
+                    
+                    if (gameCharacters[index1].char === gameCharacters[index2].char && 
+                        canConnect(index1, index2)) {
+                        return true; // 找到可连接的对
+                    }
+                }
+            }
+            
+            return false; // 没有可连接的对
+        }
+
+        function showHint() {
+            // 清除之前的提示效果
+            clearHintEffect();
+            
+            // 如果游戏已经完成，不显示提示
+            if (remainingPairs === 0) return;
+            
+            const cells = document.querySelectorAll('.cell');
+            const availableCells = Array.from(cells).filter(cell => !cell.classList.contains('matched'));
+            
+            // 如果没有可用的格子，不显示提示
+            if (availableCells.length === 0) return;
+            
+            // 找到可以连接的一对格子
+            let foundPair = false;
+            
+            for (let i = 0; i < availableCells.length; i++) {
+                for (let j = i + 1; j < availableCells.length; j++) {
+                    const index1 = parseInt(availableCells[i].dataset.index);
+                    const index2 = parseInt(availableCells[j].dataset.index);
+                    
+                    if (gameCharacters[index1].char === gameCharacters[index2].char && 
+                        canConnect(index1, index2)) {
+                        // 找到可以连接的一对
+                        availableCells[i].classList.add('hint-animation');
+                        availableCells[j].classList.add('hint-animation');
+                        foundPair = true;
+                        
+                        // 3秒后移除提示效果
+                        hintTimeout = setTimeout(() => {
+                            clearHintEffect();
+                        }, 3000);
+                        
+                        break;
+                    }
+                }
+                if (foundPair) break;
+            }
+            
+            if (!foundPair) {
+                alert('没有可以连接的汉字对了，游戏结束！');
+                restartGame();
+            }
+        }
+        
+        // 重新洗牌
+        function reshuffleBoard() {
+            // 收集所有未匹配的字符
+            const unmatchedChars = [];
+            const cells = document.querySelectorAll('.cell');
+            
+            cells.forEach(cell => {
+                if (!cell.classList.contains('matched')) {
+                    const index = parseInt(cell.dataset.index);
+                    unmatchedChars.push(gameCharacters[index]);
+                }
+            });
+            
+            // 打乱顺序
+            for (let i = unmatchedChars.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [unmatchedChars[i], unmatchedChars[j]] = [unmatchedChars[j], unmatchedChars[i]];
+            }
+            
+            // 重新分配
+            let charIndex = 0;
+            cells.forEach(cell => {
+                if (!cell.classList.contains('matched')) {
+                    const index = parseInt(cell.dataset.index);
+                    gameCharacters[index] = unmatchedChars[charIndex++];
+                    cell.textContent = gameCharacters[index].char;
+                }
+            });
+            
+            // 检查游戏是否可以继续
+            if (!checkGameCanContinue()) {
+                alert('没有可以连接的汉字对了，游戏结束！');
+                restartGame();
+            }
+        }
+        
+        // 在每次匹配后检查游戏是否可以继续
+        function checkAfterMatch() {
+            if (remainingPairs > 0 && !checkGameCanContinue()) {
+                setTimeout(() => {
+                    if (confirm('没有可以连接的汉字对了，要重新洗牌吗？')) {
+                        reshuffleBoard();
+                    }
+                }, 500);
+            }
+        }
+        
+        // 清除提示效果
+        function clearHintEffect() {
+            if (hintTimeout) {
+                clearTimeout(hintTimeout);
+                hintTimeout = null;
+            }
+            
+            const hintCells = document.querySelectorAll('.hint-animation');
+            hintCells.forEach(cell => cell.classList.remove('hint-animation'));
+        }
+        
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', (event) => {
+            // H键显示提示
+            if (event.code === 'KeyH') {
+                showHint();
+            }
+            
+            // R键重新开始游戏
+            if (event.code === 'KeyR') {
+                restartGame();
+            }
+            
+            // M键切换音效
+            if (event.code === 'KeyM') {
+                toggleSound();
+            }
+            
+            // ESC键返回主页
+            if (event.code === 'Escape') {
+                goBack();
+            }
+        });
+
+        // 初始化游戏前检查数据有效性
+        if (characterData.length < 2) {
+            alert('游戏数据不足，至少需要2对汉字才能开始游戏');
+            window.location.href = 'index.html';
+        } else {
+            initializeGame();
+        }
+    </script>
+</body>
+</html>

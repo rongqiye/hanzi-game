@@ -1,0 +1,47 @@
+// 完整的汉字数据
+const characterData = [
+    {char1: "土", char2: "士", pinyin1: "tǔ", pinyin2: "shì", meaning1: "土地、泥土", meaning2: "士兵、人士"},
+    {char1: "田", char2: "由", pinyin1: "tián", pinyin2: "yóu", meaning1: "田地、田野", meaning2: "由来、由于"},
+    {char1: "王", char2: "玉", pinyin1: "wáng", pinyin2: "yù", meaning1: "国王、王者", meaning2: "玉石、宝玉"},
+    {char1: "贝", char2: "见", pinyin1: "bèi", pinyin2: "jiàn", meaning1: "贝壳、宝贝", meaning2: "看见、见面"},
+    {char1: "未", char2: "末", pinyin1: "wèi", pinyin2: "mò", meaning1: "未来、未知", meaning2: "末尾、末梢"},
+    {char1: "己", char2: "已", pinyin1: "jǐ", pinyin2: "yǐ", meaning1: "自己、己见", meaning2: "已经、已然"},
+    {char1: "人", char2: "入", pinyin1: "rén", pinyin2: "rù", meaning1: "人类、人民", meaning2: "进入、入口"},
+    {char1: "孑", char2: "孓", pinyin1: "jié", pinyin2: "jué", meaning1: "孑然、孑孓", meaning2: "孑孓（蚊子的幼虫）"},
+    {char1: "戍", char2: "戌", pinyin1: "shù", pinyin2: "xū", meaning1: "戍守、戍边", meaning2: "戌时、戊戌"},
+    {char1: "戎", char2: "戒", pinyin1: "róng", pinyin2: "jiè", meaning1: "戎马、兵戎", meaning2: "戒律、戒备"},
+    {char1: "治", char2: "冶", pinyin1: "zhì", pinyin2: "yě", meaning1: "治理、治疗", meaning2: "冶炼、冶金"},
+    {char1: "晴", char2: "睛", pinyin1: "qíng", pinyin2: "jīng", meaning1: "晴天、晴朗", meaning2: "眼睛、画龙点睛"},
+    {char1: "竞", char2: "竟", pinyin1: "jìng", pinyin2: "jìng", meaning1: "竞争、竞赛", meaning2: "竟然、究竟"},
+    {char1: "国", char2: "围", pinyin1: "guó", pinyin2: "wéi", meaning1: "国家、中国", meaning2: "围绕、包围"},
+    {char1: "茶", char2: "荼", pinyin1: "chá", pinyin2: "tú", meaning1: "茶叶、喝茶", meaning2: "荼毒、如火如荼"},
+    {char1: "洗", char2: "冼", pinyin1: "xǐ", pinyin2: "xiǎn", meaning1: "洗澡、清洗", meaning2: "姓氏冼"},
+    {char1: "壸", char2: "壶", pinyin1: "kǔn", pinyin2: "hú", meaning1: "壸范（古代指妇德）", meaning2: "茶壶、水壶"},
+    {char1: "鹜", char2: "骛", pinyin1: "wù", pinyin2: "wù", meaning1: "趋之若鹜（鸭子）", meaning2: "好高骛远（追求）"},
+    {char1: "塵", char2: "麈", pinyin1: "chén", pinyin2: "zhǔ", meaning1: "灰尘、尘埃", meaning2: "麈尾（古代拂尘）"},
+    {char1: "畫", char2: "盡", pinyin1: "huà", pinyin2: "jìn", meaning1: "画画、绘画", meaning2: "尽头、尽力"},
+    {char1: "胄", char2: "冑", pinyin1: "zhòu", pinyin2: "zhòu", meaning1: "甲胄、贵胄", meaning2: "冑（古代战士的头盔）"},
+    {char1: "汆", char2: "氽", pinyin1: "cuān", pinyin2: "tǔn", meaning1: "汆汤、汆丸子", meaning2: "氽水、氽烫"},
+    {char1: "祇", char2: "祗", pinyin1: "qí", pinyin2: "zhī", meaning1: "神祇、地祇", meaning2: "祗敬、祗承"},
+    {char1: "辍", char2: "掇", pinyin1: "chuò", pinyin2: "duō", meaning1: "辍学、辍笔", meaning2: "拾掇、掇拾"},
+    {char1: "采", char2: "釆", pinyin1: "cǎi", pinyin2: "biàn", meaning1: "采摘、采取", meaning2: "釆（辨别的古字）"},
+    {char1: "書", char2: "晝", pinyin1: "shū", pinyin2: "zhòu", meaning1: "书籍、书法", meaning2: "白昼、昼夜"},
+    {char1: "裏", char2: "裹", pinyin1: "lǐ", pinyin2: "guǒ", meaning1: "裏面、内裏", meaning2: "包裹、裹挟"},
+    {char1: "雎", char2: "睢", pinyin1: "jū", pinyin2: "suī", meaning1: "关雎（诗经篇名）", meaning2: "睢县、恣睢"},
+    {char1: "祖", char2: "袓", pinyin1: "zǔ", pinyin2: "jù", meaning1: "祖先、祖国", meaning2: "袓（好也的意思）"},
+    {char1: "祎", char2: "袆", pinyin1: "yī", pinyin2: "huī", meaning1: "祎（美好之意）", meaning2: "袆衣（王后的祭服）"},
+    {char1: "亳", char2: "毫", pinyin1: "bó", pinyin2: "háo", meaning1: "亳州（地名）", meaning2: "毫米、毫毛"},
+    {char1: "罄", char2: "馨", pinyin1: "qìng", pinyin2: "xīn", meaning1: "罄尽、售罄", meaning2: "温馨、馨香"},
+    {char1: "垚", char2: "壵", pinyin1: "yáo", pinyin2: "zhuàng", meaning1: "垚（古同尧）", meaning2: "壵（古同壮）"},
+    {char1: "妹", char2: "妺", pinyin1: "mèi", pinyin2: "mò", meaning1: "妹妹、姐妹", meaning2: "妺喜（夏桀妃子）"},
+    {char1: "姬", char2: "姫", pinyin1: "jī", pinyin2: "zhěn", meaning1: "姬妾、虞姬", meaning2: "姫（谨慎的意思）"},
+    {char1: "口", char2: "囗", pinyin1: "kǒu", pinyin2: "wéi", meaning1: "口舌、入口", meaning2: "囗（古同围）"},
+    {char1: "芙", char2: "芺", pinyin1: "fú", pinyin2: "ǎo", meaning1: "芙蓉、芙蕖", meaning2: "芺（草名）"},
+    {char1: "毳", char2: "掱", pinyin1: "cuì", pinyin2: "pá", meaning1: "毳毛（细毛）", meaning2: "掱手（扒手）"},
+    {char1: "币", char2: "帀", pinyin1: "bì", pinyin2: "zā", meaning1: "货币、钱币", meaning2: "帀（周匝）"},
+    {char1: "日", char2: "曰", pinyin1: "rì", pinyin2: "yuē", meaning1: "日子、日期", meaning2: "子曰、美其名曰"}
+];
+
+// 保存到本地存储
+localStorage.setItem('characterData', JSON.stringify(characterData));
+console.log('汉字数据加载完成，共' + characterData.length + '对汉字');

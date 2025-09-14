@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>汉字大作战</title>
+    <!-- 添加音效资源 -->
+    <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3" preload="auto"></audio>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: gradientAnimation 10s ease infinite;
+        }
+        
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            bottom: -10px;
+            left: 0;
+            background: linear-gradient(90deg, #ff6b6b, #4834d4);
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.5s ease-out;
+            animation: underlineAnimation 1.5s forwards 0.5s;
+        }
+        
+        @keyframes underlineAnimation {
+            to { transform: scaleX(1); transform-origin: bottom left; }
+        }
+        
+        .mode-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            margin: 15px 0;
+            border-radius: 15px;
+            font-size: 1.3em;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out forwards;
+            opacity: 0;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .mode-button::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+        }
+        
+        .mode-button:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+        
+        .mode-button:nth-child(2) {
+            background: linear-gradient(45deg, #4834d4, #686de0);
+            animation-delay: 0.4s;
+        }
+        
+        .mode-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+        }
+        
+        .mode-button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        
+        .mode-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s;
+        }
+        
+        .mode-button:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .settings-button {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            margin-top: 30px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4834d4;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #6c757d;
+        }
+        
+        /* 设置弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5em;
+            color: #333;
+        }
+        
+        .close-button {
+            font-size: 1.5em;
+            color: #6c757d;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+        
+        .setting-item {
+            margin-bottom: 20px;
+        }
+        
+        .setting-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #4834d4;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .reset-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        /* 移动设备优化 */
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+                max-width: 95%;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .mode-button {
+                padding: 15px 20px;
+                font-size: 1.1em;
+                margin: 10px 0;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+        
+        /* 横屏模式优化 */
+        @media (orientation: landscape) {
+            .container {
+                max-width: 90vh;
+                padding: 15px;
+            }
+            
+            .mode-button {
+                padding: 15px;
+                font-size: 1em;
+            }
+            
+            .stats {
+                flex-direction: row;
+                gap: 20px;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4834d4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            will-change: transform;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <h1>汉字大作战</h1>
+        <button class="mode-button" onclick="startGame('findDifference')">找不同</button>
+        <button class="mode-button" onclick="startGame('linkGame')">连连看</button>
+        <button class="mode-button settings-button" onclick="openSettings()">设置</button>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="findDiffHighScore">0</div>
+                <div class="stat-label">找不同最高得分</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="linkGameBestTime">--:--</div>
+                <div class="stat-label">连连看最好成绩</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            汉字大作战 v1.1 - 提升汉字学习的趣味性
+        </div>
+    </div>
+    
+    <!-- 设置弹窗 -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">游戏设置</div>
+                <button class="close-button" onclick="closeSettings()">&times;</button>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">音效</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="setting-item">
+                <button class="reset-button" onclick="resetGameData()">重置游戏数据</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 显示加载动画
+        document.getElementById('loading').style.display = 'flex';
+        
+        // 音效控制
+        let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
+        document.getElementById('soundToggle').checked = soundEnabled;
+        
+        // 更新统计数据
+        const findDiffHighScore = localStorage.getItem('findDifferenceHighScore') || '0';
+        const linkGameBestTime = localStorage.getItem('linkGameBestTime') || '--:--';
+        
+        document.getElementById('findDiffHighScore').textContent = findDiffHighScore;
+        document.getElementById('linkGameBestTime').textContent = linkGameBestTime;
+        
+        // 加载字符数据
+        try {
+            const characterData = JSON.parse(localStorage.getItem('characterData') || '[]');
+            if (characterData.length === 0) {
+                // 如果本地存储中没有数据，加载完整数据
+                const script = document.createElement('script');
+                script.src = 'complete-character-data.js';
+                script.onload = function() {
+                    // 隐藏加载动画
+                    document.getElementById('loading').style.display = 'none';
+                };
+                script.onerror = function() {
+                    document.getElementById('loading').style.display = 'none';
+                    alert('游戏数据加载失败！请检查网络连接或刷新页面重试。');
+                };
+                document.head.appendChild(script);
+            } else {
+                // 已有数据，隐藏加载动画
+                document.getElementById('loading').style.display = 'none';
+            }
+        } catch (e) {
+            document.getElementById('loading').style.display = 'none';
+            alert('游戏数据加载失败: ' + e.message + '\
+请尝试重置游戏数据或刷新页面。');
+        }
+
+        function startGame(mode) {
+            // 播放点击音效
+            if (soundEnabled) {
+                document.getElementById('clickSound').play();
+            }
+            
+            // 显示加载动画
+            document.getElementById('loading').style.display = 'flex';
+            
+            // 设置游戏模式并跳转
+            localStorage.setItem('gameMode', mode);
+            setTimeout(() => {
+                window.location.href = mode + '.html';
+            }, 500);
+        }
+        
+        // 设置相关函数
+        function openSettings() {
+            // 播放点击音效
+            if (soundEnabled) {
+                document.getElementById('clickSound').play();
+            }
+            
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+        
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+        
+        // 切换音效设置
+        document.getElementById('soundToggle').addEventListener('change', function() {
+            soundEnabled = this.checked;
+            localStorage.setItem('soundEnabled', soundEnabled);
+            
+            // 播放音效示例
+            if (soundEnabled) {
+                document.getElementById('clickSound').play();
+            }
+        });
+        
+        // 重置游戏数据
+        function resetGameData() {
+            if (confirm('确定要重置所有游戏数据吗？这将清除所有进度、最高分记录和汉字数据。')) {
+                localStorage.removeItem('findDifferenceHighScore');
+                localStorage.removeItem('findDifferenceLevel');
+                localStorage.removeItem('linkGameBestTime');
+                localStorage.removeItem('characterData');
+                
+                // 更新显示
+                document.getElementById('findDiffHighScore').textContent = '0';
+                document.getElementById('linkGameBestTime').textContent = '--:--';
+                
+                alert('游戏数据已重置！页面将刷新以重新加载汉字数据。');
+                location.reload();
+            }
+        }
+        
+        // 点击模态框外部关闭模态框
+        window.onclick = function(event) {
+            const modal = document.getElementById('settingsModal');
+            if (event.target === modal) {
+                closeSettings();
+            }
+        }
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(event) {
+            // ESC键关闭设置
+            if (event.key === 'Escape') {
+                closeSettings();
+            }
+        });
+    </script>
+</body>
+</html>
