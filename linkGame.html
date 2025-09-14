@@ -48,12 +48,6 @@ Best Time: ${bestTime}',
             return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
         }
         
-        function switchLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('language', lang);
-            applyTranslations();
-        }
-        
         function applyTranslations() {
             document.title = t('title');
             document.querySelector('.timer .label').textContent = t('timer') + ': ';

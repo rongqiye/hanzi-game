@@ -50,12 +50,6 @@ Please return to home page to reload data'
             return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
         }
         
-        function switchLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('language', lang);
-            applyTranslations();
-        }
-        
         function applyTranslations() {
             document.title = t('title');
             

@@ -209,8 +209,6 @@
         }
         
         .stats {
-            display: flex;
-            justify-content: space-between;
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #eee;
@@ -401,7 +399,7 @@
             }
         }
         
-        /* 横屏模式优化 - 移除，使用固定竖屏模式 */
+
         
         /* 加载动画 */
         .loading {
@@ -424,7 +422,6 @@
             border-top: 5px solid #4834d4;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            will-change: transform;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         
@@ -441,8 +438,8 @@
 
     <div class="container">
         <div class="language-selector">
-            <button class="language-button active" onclick="changeLanguage('zh')">中文</button>
-            <button class="language-button" onclick="changeLanguage('en')">English</button>
+            <button class="language-button active" onclick="changeLanguage('zh-CN')">中文</button>
+            <button class="language-button" onclick="changeLanguage('en-US')">English</button>
         </div>
         <h1 id="title">汉字大作战</h1>
         <button class="mode-button" onclick="startGame('findDifference')" id="findDiffBtn">找不同</button>
@@ -488,20 +485,7 @@
     </div>
 
     <script>
-        // 添加触摸事件处理
-        document.addEventListener('DOMContentLoaded', function() {
-            // 为所有按钮添加触摸反馈
-            const buttons = document.querySelectorAll('button');
-            buttons.forEach(button => {
-                button.addEventListener('touchstart', function() {
-                    this.style.transform = 'scale(0.98)';
-                }, {passive: true});
-                
-                button.addEventListener('touchend', function() {
-                    this.style.transform = '';
-                }, {passive: true});
-            });
-        });
+        // 触摸事件处理已在CSS中实现
         
         // 显示加载动画
         document.getElementById('loading').style.display = 'flex';
@@ -658,13 +642,7 @@
             }
         }
         
-        // 点击模态框外部关闭模态框
-        window.onclick = function(event) {
-            const modal = document.getElementById('settingsModal');
-            if (event.target === modal) {
-                closeSettings();
-            }
-        }
+        // 模态框关闭已由关闭按钮处理
         
         // 添加键盘快捷键
         document.addEventListener('keydown', function(event) {
