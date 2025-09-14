@@ -2,6 +2,70 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // 多语言文本
+        const translations = {
+            'zh-CN': {
+                'title': '找不同模式 - 汉字大作战',
+                'time': '时间',
+                'score': '分数',
+                'level': '关卡',
+                'difficulty': '难度',
+                'highScore': '最高分',
+                'back': '返回主页',
+                'restart': '重新开始',
+                'gameOver': '游戏结束',
+                'totalScore': '总得分',
+                'levelUp': '恭喜！难度提升至 ${level}',
+                'soundOn': '音效: 开',
+                'soundOff': '音效: 关',
+                'allLevelsComplete': '恭喜！你已经完成了所有关卡！分数将重置。',
+                'dataError': '游戏数据加载失败: ${error}\
+请返回主页重新加载数据'
+            },
+            'en-US': {
+                'title': 'Find Difference - Chinese Characters',
+                'time': 'Time',
+                'score': 'Score',
+                'level': 'Level',
+                'difficulty': 'Difficulty',
+                'highScore': 'High Score',
+                'back': 'Back to Home',
+                'restart': 'Restart',
+                'gameOver': 'Game Over',
+                'totalScore': 'Total Score',
+                'levelUp': 'Level Up! Difficulty increased to ${level}',
+                'soundOn': 'Sound: On',
+                'soundOff': 'Sound: Off',
+                'allLevelsComplete': 'Congratulations! You have completed all levels! Score will be reset.',
+                'dataError': 'Game data load failed: ${error}\
+Please return to home page to reload data'
+            }
+        };
+        
+        let currentLang = localStorage.getItem('language') || 'zh-CN';
+        
+        function t(key, params = {}) {
+            const text = translations[currentLang][key] || translations['zh-CN'][key];
+            return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
+        }
+        
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+            applyTranslations();
+        }
+        
+        function applyTranslations() {
+            document.title = t('title');
+            document.querySelector('.header-label:nth-child(1)').textContent = t('time') + ':';
+            document.querySelector('.header-label:nth-child(2)').textContent = t('score') + ':';
+            document.querySelector('.header-label:nth-child(3)').textContent = t('level') + ':';
+            document.querySelector('.header-label:nth-child(4)').textContent = t('difficulty') + ':';
+            document.querySelector('.header-label:nth-child(5)').textContent = t('highScore') + ':';
+            document.querySelector('.back-button').textContent = t('back');
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="screen-orientation" content="portrait">
@@ -509,8 +573,7 @@
                 throw new Error('游戏数据格式错误');
             }
         } catch (e) {
-            alert(`游戏数据加载失败: ${e.message}
-请返回主页重新加载数据`);
+            alert(t('dataError', {error: e.message}));
             window.location.href = 'index.html';
             throw e; // 使用throw代替return
         }
@@ -548,7 +611,7 @@
             if (currentLevel >= characterData.length) {
                 // 所有关卡完成，重置关卡
                 currentLevel = 0;
-                alert('恭喜！你已经完成了所有关卡！分数将重置。');
+                alert(t('allLevelsComplete'));
                 score = 0;
                 document.getElementById('score').textContent = score;
             }
@@ -686,9 +749,9 @@
                 gameOverModal.className = 'game-over-modal';
                 gameOverModal.innerHTML = `
                     <div class="modal-content">
-                        <h2>游戏结束</h2>
-                        <p>总得分: ${score}</p>
-                        <button class="restart-button" onclick="restartFromBeginning()">重新开始</button>
+                        <h2>${t('gameOver')}</h2>
+                        <p>${t('totalScore')}: ${score}</p>
+                        <button class="restart-button" onclick="restartFromBeginning()">${t('restart')}</button>
                     </div>
                 `;
                 document.body.appendChild(gameOverModal);
@@ -716,7 +779,7 @@
                     // 显示升级通知
                     const notification = document.createElement('div');
                     notification.className = 'level-up-notification';
-                    notification.textContent = `恭喜！难度提升至 ${difficultyLevels[newDifficultyIndex].name}`;
+                    notification.textContent = t('levelUp', {level: difficultyLevels[newDifficultyIndex].name});
                     document.body.appendChild(notification);
                     
                     // 播放升级音效
@@ -789,12 +852,13 @@
             // M键切换音效
             if (event.code === 'KeyM') {
                 const isSoundOn = toggleSound();
-                alert(isSoundOn ? '音效已开启' : '音效已关闭');
+                alert(isSoundOn ? t('soundOn') : t('soundOff'));
             }
         });
 
         // 初始化游戏
         initializeGame();
+        applyTranslations();
     </script>
 </body>
 </html>

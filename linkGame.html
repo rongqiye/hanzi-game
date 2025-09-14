@@ -2,6 +2,63 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // 多语言文本
+        const translations = {
+            'zh-CN': {
+                'title': '连连看模式 - 汉字大作战',
+                'timer': '时间',
+                'pairsLeft': '剩余配对',
+                'bestTime': '最佳时间',
+                'back': '返回主页',
+                'restart': '重新开始',
+                'soundOn': '音效: 开',
+                'soundOff': '音效: 关',
+                'hint': '提示',
+                'congrats': '恭喜！游戏完成！\
+用时: ${time}\
+最佳时间: ${bestTime}'
+            },
+            'en-US': {
+                'title': 'Link Game - Chinese Characters',
+                'timer': 'Time',
+                'pairsLeft': 'Pairs Left',
+                'bestTime': 'Best Time',
+                'back': 'Back to Home',
+                'restart': 'Restart',
+                'soundOn': 'Sound: On',
+                'soundOff': 'Sound: Off',
+                'hint': 'Hint',
+                'congrats': 'Congratulations!\
+Time: ${time}\
+Best Time: ${bestTime}'
+            }
+        };
+        
+        let currentLang = localStorage.getItem('language') || 'zh-CN';
+        
+        function t(key, params = {}) {
+            const text = translations[currentLang][key] || translations['zh-CN'][key];
+            return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
+        }
+        
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+            applyTranslations();
+        }
+        
+        function applyTranslations() {
+            document.title = t('title');
+            document.getElementById('timer').previousSibling.textContent = t('timer') + ': ';
+            document.getElementById('pairsLeft').previousSibling.textContent = t('pairsLeft') + ': ';
+            document.getElementById('bestTime').previousSibling.textContent = t('bestTime') + ': ';
+            document.querySelector('.back-button').textContent = t('back');
+            document.querySelector('.restart-button').textContent = t('restart');
+            document.getElementById('soundButton').textContent = soundEnabled ? t('soundOn') : t('soundOff');
+            document.querySelector('.button:last-child').textContent = t('hint');
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="screen-orientation" content="portrait">
@@ -348,9 +405,9 @@
     <div class="game-container">
         <div class="header">
             <div class="timer" id="timer">00:00</div>
-            <div class="pairs-left">剩余配对: <span id="pairsLeft">32</span></div>
+            <div class="pairs-left"><span id="pairsLeft">32</span></div>
             <div class="stats">
-                <div class="best-time">最佳时间: <span id="bestTime">--:--</span></div>
+                <div class="best-time"><span id="bestTime">--:--</span></div>
             </div>
         </div>
         
@@ -397,6 +454,7 @@
             updateSoundButton();
             updateBestTimeDisplay();
             addTouchSupport();
+            applyTranslations();
         });
         
         function addTouchSupport() {
@@ -1150,10 +1208,10 @@
         function updateSoundButtonState() {
             const soundButton = document.getElementById('soundButton');
             if (soundEnabled) {
-                soundButton.textContent = '音效: 开';
+                soundButton.textContent = t('soundOn');
                 soundButton.classList.remove('off');
             } else {
-                soundButton.textContent = '音效: 关';
+                soundButton.textContent = t('soundOff');
                 soundButton.classList.add('off');
             }
         }
