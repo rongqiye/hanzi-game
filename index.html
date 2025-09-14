@@ -543,7 +543,8 @@
             
             // 更新语言按钮状态
             document.querySelectorAll('.language-button').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
+                const btnLang = btn.textContent === 'English' ? 'en-US' : 'zh-CN';
+                btn.classList.toggle('active', btnLang === lang);
             });
         }
         
