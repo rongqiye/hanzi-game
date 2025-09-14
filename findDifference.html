@@ -43,24 +43,42 @@
         }
         
         .header {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        
+        .header-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 6px;
+            font-size: 0.9em;
         }
         
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 10px;
+        .header-label {
+            font-weight: bold;
+            margin-right: 6px;
         }
         
-        .header-bottom {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
+        .header-value {
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .difficulty {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        
+        .high-score-item {
+            grid-column: 1 / -1;
+            justify-content: center;
         }
         
         .timer {
@@ -289,42 +307,43 @@
         /* 移动设备优化 */
         @media (max-width: 500px) {
             body {
-                padding: 10px;
+                padding: 8px;
             }
             
             .game-container {
-                padding: 12px;
+                padding: 10px;
                 width: 100%;
                 max-width: none;
-                border-radius: 12px;
+                border-radius: 10px;
             }
             
             .grid {
                 gap: 1px;
-                max-height: 70vh;
+                max-height: 75vh;
             }
             
             .cell {
-                font-size: 1.2em;
+                font-size: 1.1em;
                 border-width: 1px;
             }
             
             .character {
-                font-size: 1.5em;
+                font-size: 1.4em;
             }
             
             .header {
-                margin-bottom: 10px;
+                margin-bottom: 8px;
+                gap: 6px;
             }
             
-            .header-top, .header-bottom {
-                flex-direction: column;
-                gap: 5px;
-                align-items: flex-start;
+            .header-item {
+                padding: 4px 8px;
+                font-size: 0.85em;
             }
             
-            .timer, .score, .level, .high-score {
-                font-size: 1em;
+            .difficulty {
+                padding: 2px 6px;
+                font-size: 0.85em;
             }
             
             .back-button {
@@ -426,15 +445,26 @@
 <body>
     <div class="game-container">
         <div class="header">
-            <div class="header-top">
-                <div class="timer" id="timer">30秒</div>
-                <div class="score">分数: <span id="score">0</span></div>
+            <div class="header-item">
+                <span class="header-label">时间:</span>
+                <span class="header-value" id="timer">30秒</span>
             </div>
-            <div class="header-bottom">
-                <div class="level" id="level">关卡: 1/1</div>
-                <div class="difficulty entry" id="difficulty">入门</div>
+            <div class="header-item">
+                <span class="header-label">分数:</span>
+                <span class="header-value" id="score">0</span>
             </div>
-            <div class="high-score">最高分: <span id="highScore">0</span></div>
+            <div class="header-item">
+                <span class="header-label">关卡:</span>
+                <span class="header-value" id="level">1/1</span>
+            </div>
+            <div class="header-item">
+                <span class="header-label">难度:</span>
+                <span class="header-value difficulty entry" id="difficulty">入门</span>
+            </div>
+            <div class="header-item high-score-item">
+                <span class="header-label">最高分:</span>
+                <span class="header-value" id="highScore">0</span>
+            </div>
         </div>
         
         <div class="grid" id="grid"></div>

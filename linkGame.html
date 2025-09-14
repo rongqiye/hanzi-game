@@ -79,8 +79,12 @@
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr);
-            gap: 5px;
-            margin-bottom: 20px;
+            gap: 2px;
+            margin-bottom: 15px;
+            max-height: 80vh;
+            overflow: auto;
+            padding: 2px;
+            -webkit-overflow-scrolling: touch;
         }
         
         .cell {
@@ -89,15 +93,18 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2em;
+            font-size: 1em;
             background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            will-change: transform;
+            min-width: 0;
+            min-height: 0;
         }
         
         .cell:active::after {
@@ -220,34 +227,76 @@
         
         /* 移动设备优化 */
         @media (max-width: 500px) {
-            .game-container {
-                padding: 15px;
-                width: 95%;
-                max-width: none;
+            body {
+                padding: 10px;
             }
             
-            .cell {
-                font-size: 1.5em;
+            .game-container {
+                padding: 12px;
+                width: 100%;
+                max-width: none;
+                border-radius: 12px;
             }
             
             .grid {
-                gap: 2px;
+                gap: 1px;
+                max-height: 70vh;
+            }
+            
+            .cell {
+                font-size: 1.2em;
+                border-width: 1px;
             }
             
             .character {
-                font-size: 2em;
+                font-size: 1.5em;
+            }
+            
+            .header {
+                margin-bottom: 10px;
             }
             
             .buttons {
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: 6px;
+                margin-top: 15px;
             }
             
             .button {
-                flex: 1 0 40%;
-                margin-bottom: 0;
-                padding: 12px 0;
+                flex: 1 0 45%;
+                padding: 10px 0;
+                font-size: 0.9em;
                 min-width: 0;
+            }
+            
+            .character-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            
+            .info-box {
+                padding: 8px;
+            }
+        }
+        
+        /* 超小屏幕优化 */
+        @media (max-width: 350px) {
+            .cell {
+                font-size: 1em;
+            }
+            
+            .grid {
+                gap: 1px;
+            }
+            
+            .buttons {
+                gap: 4px;
+            }
+            
+            .button {
+                flex: 1 0 100%;
+                margin-bottom: 4px;
             }
         }
         
