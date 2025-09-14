@@ -650,13 +650,20 @@
                 
                 // 强制重新加载完整数据
                 const script = document.createElement('script');
-                script.src = 'complete-character-data.js';
+                script.src = 'complete-character-data.js?v=' + Date.now(); // 防止缓存
                 script.onload = function() {
                     // 检查数据是否已加载
                     const loadedData = JSON.parse(localStorage.getItem('characterData') || '[]');
                     if (loadedData.length > 0) {
-                        alert('游戏数据已重置！汉字数据已重新加载。');
-                        location.reload();
+                        // 确保数据已完全写入localStorage
+                        setTimeout(() => {
+                            // 重新加载所有游戏页面数据
+                            if (typeof reloadAllGameData === 'function') {
+                                reloadAllGameData();
+                            }
+                            alert('游戏数据已重置！请重新进入游戏。');
+                            location.reload();
+                        }, 500);
                     } else {
                         alert('游戏数据重置失败，请检查网络连接后重试');
                         location.reload();
@@ -668,6 +675,17 @@
                 };
                 document.head.appendChild(script);
             }
+        }
+        
+        // 重新加载所有游戏数据
+        function reloadAllGameData() {
+            // 强制重新加载字符数据到所有游戏页面
+            const event = new CustomEvent('gameDataReloaded', {
+                detail: { 
+                    characterData: JSON.parse(localStorage.getItem('characterData') || '[]')
+                }
+            });
+            window.dispatchEvent(event);
         }
         
         // 模态框关闭已由关闭按钮处理
