@@ -15,6 +15,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -25,6 +26,9 @@
             justify-content: center;
             align-items: center;
             animation: gradientAnimation 10s ease infinite;
+            background-size: 200% 200%;
+            touch-action: manipulation;
+            padding: 0 10px;
         }
         
         @keyframes gradientAnimation {
@@ -86,13 +90,15 @@
             font-size: 1.3em;
             cursor: pointer;
             width: 100%;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
             overflow: hidden;
             animation: slideIn 0.5s ease-out forwards;
             opacity: 0;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
+            will-change: transform;
+            font-weight: 500;
         }
         
         .mode-button::before {
@@ -119,8 +125,8 @@
         }
         
         .mode-button:active {
-            transform: translateY(-1px);
-            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            transform: scale(0.98);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .mode-button::after {
@@ -297,18 +303,51 @@
         /* 移动设备优化 */
         @media (max-width: 500px) {
             .container {
-                padding: 20px;
+                padding: 25px 20px;
                 max-width: 95%;
+                border-radius: 15px;
             }
             
             h1 {
                 font-size: 2em;
+                margin-bottom: 20px;
             }
             
             .mode-button {
-                padding: 15px 20px;
+                padding: 18px 20px;
+                font-size: 1.2em;
+                margin: 12px 0;
+                border-radius: 12px;
+            }
+            
+            .stats {
+                flex-direction: row;
+                gap: 15px;
+                margin-top: 15px;
+                padding-top: 15px;
+            }
+            
+            .footer {
+                margin-top: 20px;
+                font-size: 0.8em;
+            }
+        }
+        
+        /* 小屏幕设备优化 */
+        @media (max-width: 350px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 15px;
+            }
+            
+            .mode-button {
+                padding: 15px;
                 font-size: 1.1em;
-                margin: 10px 0;
+                margin: 8px 0;
             }
             
             .stats {
@@ -317,23 +356,7 @@
             }
         }
         
-        /* 横屏模式优化 */
-        @media (orientation: landscape) {
-            .container {
-                max-width: 90vh;
-                padding: 15px;
-            }
-            
-            .mode-button {
-                padding: 15px;
-                font-size: 1em;
-            }
-            
-            .stats {
-                flex-direction: row;
-                gap: 20px;
-            }
-        }
+        /* 横屏模式优化 - 移除，使用固定竖屏模式 */
         
         /* 加载动画 */
         .loading {
@@ -357,6 +380,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             will-change: transform;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         
         @keyframes spin {
@@ -415,6 +439,21 @@
     </div>
 
     <script>
+        // 添加触摸事件处理
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为所有按钮添加触摸反馈
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.98)';
+                }, {passive: true});
+                
+                button.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                }, {passive: true});
+            });
+        });
+        
         // 显示加载动画
         document.getElementById('loading').style.display = 'flex';
         
