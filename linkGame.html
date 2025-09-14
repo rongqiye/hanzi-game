@@ -69,10 +69,10 @@ Best Time: ${bestTime}',
             if (bestTimeLabel) bestTimeLabel.textContent = t('bestTime') + ':';
             
             // 更新按钮文本（使用ID确保准确性）
-            const backBtn = document.getElementById('backButton') || document.querySelector('.back-button');
-            const restartBtn = document.getElementById('restartButton') || document.querySelector('.restart-button');
+            const backBtn = document.getElementById('backButton');
+            const restartBtn = document.getElementById('restartButton');
             const soundBtn = document.getElementById('soundButton');
-            const hintBtn = document.getElementById('hintButton') || document.querySelector('.button:last-child');
+            const hintBtn = document.getElementById('hintButton');
             
             if (backBtn) backBtn.textContent = t('back');
             if (restartBtn) restartBtn.textContent = t('restart');
@@ -615,10 +615,10 @@ Best Time: ${bestTime}',
         </div>
         
         <div class="buttons">
-            <button class="button back-button" onclick="goBack()"></button>
-            <button class="button restart-button" onclick="restartGame()"></button>
-            <button class="button sound-button" id="soundButton" onclick="toggleSound()"></button>
-            <button class="button" onclick="showHint()"></button>
+            <button id="backButton" class="button back-button" onclick="goBack()"></button>
+            <button id="restartButton" class="button restart-button" onclick="restartGame()"></button>
+            <button id="soundButton" class="button sound-button" onclick="toggleSound()"></button>
+            <button id="hintButton" class="button" onclick="showHint()"></button>
         </div>
     </div>
 
