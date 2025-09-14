@@ -69,10 +69,18 @@ Best Time: ${bestTime}',
             if (bestTimeLabel) bestTimeLabel.textContent = t('bestTime') + ':';
             
             // 更新按钮文本（使用ID确保准确性）
+            // 确保按钮存在后再设置文本
             const backBtn = document.getElementById('backButton');
+            if (backBtn) backBtn.textContent = t('back');
+            
             const restartBtn = document.getElementById('restartButton');
+            if (restartBtn) restartBtn.textContent = t('restart');
+            
             const soundBtn = document.getElementById('soundButton');
+            if (soundBtn) soundBtn.textContent = soundEnabled ? t('soundOn') : t('soundOff');
+            
             const hintBtn = document.getElementById('hintButton');
+            if (hintBtn) hintBtn.textContent = t('hint');
             
             if (backBtn) backBtn.textContent = t('back');
             if (restartBtn) restartBtn.textContent = t('restart');
@@ -615,10 +623,10 @@ Best Time: ${bestTime}',
         </div>
         
         <div class="buttons">
-            <button id="backButton" class="button back-button" onclick="goBack()"></button>
-            <button id="restartButton" class="button restart-button" onclick="restartGame()"></button>
-            <button id="soundButton" class="button sound-button" onclick="toggleSound()"></button>
-            <button id="hintButton" class="button" onclick="showHint()"></button>
+            <button id="backButton" class="button back-button" onclick="goBack()">返回主页</button>
+            <button id="restartButton" class="button restart-button" onclick="restartGame()">重新开始</button>
+            <button id="soundButton" class="button sound-button" onclick="toggleSound()">音效: 开</button>
+            <button id="hintButton" class="button" onclick="showHint()">提示</button>
         </div>
     </div>
 
