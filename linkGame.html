@@ -151,9 +151,7 @@
         }
         
         .character-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            display: block;
             margin-top: 20px;
         }
         
@@ -355,14 +353,9 @@
         
         <div class="character-info" id="characterInfo" style="display: none;">
             <div class="info-box">
-                <div class="character" id="char1"></div>
-                <div class="pinyin" id="pinyin1"></div>
-                <div class="meaning" id="meaning1"></div>
-            </div>
-            <div class="info-box">
-                <div class="character" id="char2"></div>
-                <div class="pinyin" id="pinyin2"></div>
-                <div class="meaning" id="meaning2"></div>
+                <div class="character" id="char"></div>
+                <div class="pinyin" id="pinyin"></div>
+                <div class="meaning" id="meaning"></div>
             </div>
         </div>
         
@@ -1100,26 +1093,18 @@
         // 删除重复的函数定义
 
         function showCharacterInfo(pair, charData) {
-            document.getElementById('characterInfo').style.display = 'grid';
+            document.getElementById('characterInfo').style.display = 'block';
             
-            // 显示当前选中字符的信息（两个框显示相同内容）
+            // 显示当前选中字符的信息
             if (charData.char === pair.char1) {
-                document.getElementById('char1').textContent = pair.char1;
-                document.getElementById('pinyin1').textContent = pair.pinyin1;
-                document.getElementById('meaning1').textContent = pair.meaning1;
-                document.getElementById('char2').textContent = pair.char1;
-                document.getElementById('pinyin2').textContent = pair.pinyin1;
-                document.getElementById('meaning2').textContent = pair.meaning1;
+                document.getElementById('char').textContent = pair.char1;
+                document.getElementById('pinyin').textContent = pair.pinyin1;
+                document.getElementById('meaning').textContent = pair.meaning1;
             } else {
-                document.getElementById('char1').textContent = pair.char2;
-                document.getElementById('pinyin1').textContent = pair.pinyin2;
-                document.getElementById('meaning1').textContent = pair.meaning2;
-                document.getElementById('char2').textContent = pair.char2;
-                document.getElementById('pinyin2').textContent = pair.pinyin2;
-                document.getElementById('meaning2').textContent = pair.meaning2;
+                document.getElementById('char').textContent = pair.char2;
+                document.getElementById('pinyin').textContent = pair.pinyin2;
+                document.getElementById('meaning').textContent = pair.meaning2;
             }
-            
-            // 详情框不再自动隐藏
         }
 
         function restartGame() {
