@@ -157,6 +157,33 @@
             margin-top: 30px;
         }
         
+        .language-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .language-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .language-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .language-button.active {
+            background: white;
+            color: #4834d4;
+            font-weight: bold;
+        }
+        
         .footer {
             margin-top: 30px;
             font-size: 0.9em;
@@ -395,23 +422,27 @@
     </div>
 
     <div class="container">
-        <h1>汉字大作战</h1>
-        <button class="mode-button" onclick="startGame('findDifference')">找不同</button>
-        <button class="mode-button" onclick="startGame('linkGame')">连连看</button>
-        <button class="mode-button settings-button" onclick="openSettings()">设置</button>
+        <div class="language-selector">
+            <button class="language-button active" onclick="changeLanguage('zh')">中文</button>
+            <button class="language-button" onclick="changeLanguage('en')">English</button>
+        </div>
+        <h1 id="title">汉字大作战</h1>
+        <button class="mode-button" onclick="startGame('findDifference')" id="findDiffBtn">找不同</button>
+        <button class="mode-button" onclick="startGame('linkGame')" id="linkGameBtn">连连看</button>
+        <button class="mode-button settings-button" onclick="openSettings()" id="settingsBtn">设置</button>
         
         <div class="stats">
             <div class="stat-item">
                 <div class="stat-value" id="findDiffHighScore">0</div>
-                <div class="stat-label">找不同最高得分</div>
+                <div class="stat-label" id="findDiffLabel">找不同最高得分</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="linkGameBestTime">--:--</div>
-                <div class="stat-label">连连看最好成绩</div>
+                <div class="stat-label" id="linkGameLabel">连连看最好成绩</div>
             </div>
         </div>
         
-        <div class="footer">
+        <div class="footer" id="footer">
             汉字大作战 v1.1 - 提升汉字学习的趣味性
         </div>
     </div>
@@ -420,12 +451,12 @@
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">游戏设置</div>
+                <div class="modal-title" id="modalTitle">游戏设置</div>
                 <button class="close-button" onclick="closeSettings()">&times;</button>
             </div>
             
             <div class="setting-item">
-                <label class="setting-label">音效</label>
+                <label class="setting-label" id="soundLabel">音效</label>
                 <label class="toggle-switch">
                     <input type="checkbox" id="soundToggle" checked>
                     <span class="slider"></span>
@@ -433,7 +464,7 @@
             </div>
             
             <div class="setting-item">
-                <button class="reset-button" onclick="resetGameData()">重置游戏数据</button>
+                <button class="reset-button" onclick="resetGameData()" id="resetBtn">重置游戏数据</button>
             </div>
         </div>
     </div>
@@ -457,9 +488,66 @@
         // 显示加载动画
         document.getElementById('loading').style.display = 'flex';
         
-        // 音效控制
+        // 语言和音效控制
+        let currentLanguage = localStorage.getItem('language') || 'zh';
         let soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
         document.getElementById('soundToggle').checked = soundEnabled;
+        
+        // 语言资源
+        const languageResources = {
+            zh: {
+                title: "汉字大作战",
+                findDiffBtn: "找不同",
+                linkGameBtn: "连连看",
+                settingsBtn: "设置",
+                findDiffLabel: "找不同最高得分",
+                linkGameLabel: "连连看最好成绩",
+                footer: "汉字大作战 v1.1 - 提升汉字学习的趣味性",
+                modalTitle: "游戏设置",
+                soundLabel: "音效",
+                resetBtn: "重置游戏数据"
+            },
+            en: {
+                title: "Chinese Character Challenge",
+                findDiffBtn: "Spot the Difference",
+                linkGameBtn: "Character Matching",
+                settingsBtn: "Settings",
+                findDiffLabel: "Spot Diff High Score",
+                linkGameLabel: "Matching Best Time",
+                footer: "Chinese Character Challenge v1.1",
+                modalTitle: "Game Settings",
+                soundLabel: "Sound Effects",
+                resetBtn: "Reset Game Data"
+            }
+        };
+        
+        // 初始化语言
+        updateLanguage();
+        
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            updateLanguage();
+            
+            // 更新语言按钮状态
+            document.querySelectorAll('.language-button').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase() === lang);
+            });
+        }
+        
+        function updateLanguage() {
+            const lang = languageResources[currentLanguage];
+            document.getElementById('title').textContent = lang.title;
+            document.getElementById('findDiffBtn').textContent = lang.findDiffBtn;
+            document.getElementById('linkGameBtn').textContent = lang.linkGameBtn;
+            document.getElementById('settingsBtn').textContent = lang.settingsBtn;
+            document.getElementById('findDiffLabel').textContent = lang.findDiffLabel;
+            document.getElementById('linkGameLabel').textContent = lang.linkGameLabel;
+            document.getElementById('footer').textContent = lang.footer;
+            document.querySelector('.modal-title').textContent = lang.modalTitle;
+            document.querySelector('.setting-label').textContent = lang.soundLabel;
+            document.querySelector('.reset-button').textContent = lang.resetBtn;
+        }
         
         // 更新统计数据
         const findDiffHighScore = localStorage.getItem('findDifferenceHighScore') || '0';
