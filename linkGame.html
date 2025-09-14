@@ -43,58 +43,43 @@ Best Time: ${bestTime}',
         
         let currentLang = localStorage.getItem('language') || 'zh-CN';
         
-        // 强制使用标准格式
-        if (currentLang !== 'zh-CN' && currentLang !== 'en-US') {
-            currentLang = 'zh-CN'; // 默认值
-        }
-        localStorage.setItem('language', currentLang);
-        
+                
         function t(key, params = {}) {
             const text = translations[currentLang][key] || translations['zh-CN'][key];
             return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
         }
         
         function applyTranslations() {
-            // 确保DOM完全加载后再执行翻译
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', applyTranslations);
-                return;
-            }
-
             // 更新页面标题
             document.title = t('title');
             
-            // 更新统计信息标签
-            const timerLabel = document.querySelector('.timer .label');
-            const pairsLeftLabel = document.querySelector('.pairs-left .label');
-            const bestTimeLabel = document.querySelector('.best-time .label');
+            // 更新统计信息标签（直接使用数组索引访问）
+            const labels = document.querySelectorAll('.label');
+            labels[0].textContent = t('timer') + ':';
+            labels[1].textContent = t('pairsLeft') + ':';
+            labels[2].textContent = t('bestTime') + ':';
             
-            if (timerLabel) timerLabel.textContent = t('timer');
-            if (pairsLeftLabel) pairsLeftLabel.textContent = t('pairsLeft');
-            if (bestTimeLabel) bestTimeLabel.textContent = t('bestTime');
-            
-            // 更新按钮文本 - 使用更可靠的选择器
-            const buttons = {
-                '.back-button': t('back'),
-                '.restart-button': t('restart'),
-                '#soundButton': soundEnabled ? t('soundOn') : t('soundOff'),
-                '.buttons .button:last-child': t('hint')
-            };
-            
-            for (const [selector, text] of Object.entries(buttons)) {
-                const element = document.querySelector(selector);
-                if (element) element.textContent = text;
-            }
+            // 更新按钮文本（直接使用数组索引访问）
+            const buttons = document.querySelectorAll('.button');
+            buttons[0].textContent = t('back');
+            buttons[1].textContent = t('restart');
+            buttons[2].textContent = soundEnabled ? t('soundOn') : t('soundOff');
+            buttons[3].textContent = t('hint');
             
             // 更新游戏状态文本
-            updateGameStatusText();
+            if (remainingPairs === 0) {
+                const finalTime = document.getElementById('timer').textContent || '00:00';
+                const bestTime = localStorage.getItem('linkGameBestTime') || '--:--';
+                document.querySelector('.congrats-text').textContent = 
+                    t('congrats', { time: finalTime, bestTime: bestTime });
+            }
             
             // 更新按钮状态
             updateSoundButtonState();
         }
 
-        function updateGameStatusText() {
-            // 更新游戏完成弹窗文本
+        function updateAllTextElements() {
+            // 更新游戏状态文本
             if (remainingPairs === 0) {
                 const finalTime = document.getElementById('timer')?.textContent || '00:00';
                 const bestTime = localStorage.getItem('linkGameBestTime') || '--:--';
@@ -108,16 +93,14 @@ Best Time: ${bestTime}',
             }
             
             // 更新提示文本
-            const alertTexts = {
-                '#noPairsAlert': t('noPairsLeft'),
-                '#loadFailedAlert': t('loadFailed'),
-                '#reshuffleAlert': t('reshufflePrompt')
+            const updateAlert = (id, key) => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = t(key);
             };
             
-            for (const [id, text] of Object.entries(alertTexts)) {
-                const alert = document.querySelector(id);
-                if (alert) alert.textContent = text;
-            }
+            updateAlert('noPairsAlert', 'noPairsLeft');
+            updateAlert('loadFailedAlert', 'loadFailed');
+            updateAlert('reshuffleAlert', 'reshufflePrompt');
             
             // 更新字符信息区域
             const charInfo = document.getElementById('characterInfo');
@@ -128,6 +111,15 @@ Best Time: ${bestTime}',
                     if (currentPair) showCharacterInfo(currentPair, {char: currentChar});
                 }
             }
+            
+            // 确保所有动态生成的文本也被更新
+            setTimeout(() => {
+                const dynamicTextElements = document.querySelectorAll('[data-translate]');
+                dynamicTextElements.forEach(el => {
+                    const key = el.getAttribute('data-translate');
+                    if (key) el.textContent = t(key);
+                });
+            }, 100);
         }
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
