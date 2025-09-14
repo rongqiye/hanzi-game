@@ -507,7 +507,7 @@
         
         // 语言资源
         const languageResources = {
-            zh: {
+            'zh-CN': {
                 title: "汉字大作战",
                 findDiffBtn: "找不同",
                 linkGameBtn: "连连看",
@@ -517,9 +517,12 @@
                 footer: "汉字大作战 v1.1 - 提升汉字学习的趣味性",
                 modalTitle: "游戏设置",
                 soundLabel: "音效",
-                resetBtn: "重置游戏数据"
+                resetBtn: "重置游戏数据",
+                resetConfirm: "确定要重置所有游戏数据吗？这将清除所有进度、最高分记录和汉字数据。",
+                resetSuccess: "游戏数据已重置！汉字数据已重新加载。",
+                resetFailed: "游戏数据重置失败，请检查网络连接后重试"
             },
-            en: {
+            'en-US': {
                 title: "Chinese Character Challenge",
                 findDiffBtn: "Spot the Difference",
                 linkGameBtn: "Character Matching",
@@ -529,23 +532,43 @@
                 footer: "Chinese Character Challenge v1.1",
                 modalTitle: "Game Settings",
                 soundLabel: "Sound Effects",
-                resetBtn: "Reset Game Data"
+                resetBtn: "Reset Game Data",
+                resetConfirm: "Are you sure you want to reset all game data? This will clear all progress, high scores and character data.",
+                resetSuccess: "Game data has been reset! Character data has been reloaded.",
+                resetFailed: "Failed to reset game data, please check your network connection and try again."
             }
         };
         
         // 初始化语言
+        currentLanguage = localStorage.getItem('language') || 'zh-CN';
         updateLanguage();
         
+        // 初始化语言按钮状态
+        document.querySelectorAll('.language-button').forEach(btn => {
+            btn.classList.toggle('active', 
+                (btn.textContent === 'English' && currentLanguage === 'en-US') || 
+                (btn.textContent === '中文' && currentLanguage === 'zh-CN')
+            );
+        });
+        
         function changeLanguage(lang) {
-            currentLanguage = lang;
-            localStorage.setItem('language', lang);
+            currentLanguage = lang; // 直接使用zh-CN/en-US
+            localStorage.setItem('language', currentLanguage);
             updateLanguage();
             
             // 更新语言按钮状态
             document.querySelectorAll('.language-button').forEach(btn => {
-                const btnLang = btn.textContent === 'English' ? 'en-US' : 'zh-CN';
-                btn.classList.toggle('active', btnLang === lang);
+                btn.classList.toggle('active', 
+                    (btn.textContent === 'English' && lang === 'en-US') || 
+                    (btn.textContent === '中文' && lang === 'zh-CN')
+                );
             });
+            
+            // 强制重新加载翻译
+            const event = new CustomEvent('languageChanged', {
+                detail: { language: currentLanguage }
+            });
+            window.dispatchEvent(event);
         }
         
         function updateLanguage() {
