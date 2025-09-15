@@ -43,88 +43,53 @@ Best Time: ${bestTime}',
         
         let currentLang = localStorage.getItem('language') || 'zh-CN';
         
+        // 监听localStorage变化，用于跨页面同步语言设置
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'language') {
+                currentLang = event.newValue || 'zh-CN';
+                applyTranslations();
+            }
+        });
                 
         function t(key, params = {}) {
             const text = translations[currentLang][key] || translations['zh-CN'][key];
             return text.replace(/\${(.*?)}/g, (_, p1) => params[p1] || '');
         }
         
+        // 简化的翻译应用函数
         function applyTranslations() {
-            // 确保DOM完全加载
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', applyTranslations);
-                return;
-            }
-
             // 更新页面标题
             document.title = t('title');
             
-            // 更新统计信息标签（使用更可靠的选择器）
-            const timerLabel = document.querySelector('.timer .label');
-            const pairsLabel = document.querySelector('.pairs-left .label');
-            const bestTimeLabel = document.querySelector('.best-time .label');
+            // 更新所有标签和按钮文本
+            document.querySelector('.timer .label').textContent = t('timer') + ':';
+            document.querySelector('.pairs-left .label').textContent = t('pairsLeft') + ':';
+            document.querySelector('.best-time .label').textContent = t('bestTime') + ':';
             
-            if (timerLabel) timerLabel.textContent = t('timer') + ':';
-            if (pairsLabel) pairsLabel.textContent = t('pairsLeft') + ':';
-            if (bestTimeLabel) bestTimeLabel.textContent = t('bestTime') + ':';
+            document.getElementById('backButton').textContent = t('back');
+            document.getElementById('restartButton').textContent = t('restart');
+            document.getElementById('soundButton').textContent = soundEnabled ? t('soundOn') : t('soundOff');
+            document.getElementById('hintButton').textContent = t('hint');
             
-            // 更新按钮文本（使用ID确保准确性）
-            // 确保按钮存在后再设置文本
-            const backBtn = document.getElementById('backButton');
-            if (backBtn) backBtn.textContent = t('back');
-            
-            const restartBtn = document.getElementById('restartButton');
-            if (restartBtn) restartBtn.textContent = t('restart');
-            
-            const soundBtn = document.getElementById('soundButton');
-            if (soundBtn) soundBtn.textContent = soundEnabled ? t('soundOn') : t('soundOff');
-            
-            const hintBtn = document.getElementById('hintButton');
-            if (hintBtn) hintBtn.textContent = t('hint');
-            
-            if (backBtn) backBtn.textContent = t('back');
-            if (restartBtn) restartBtn.textContent = t('restart');
-            if (soundBtn) soundBtn.textContent = soundEnabled ? t('soundOn') : t('soundOff');
-            if (hintBtn) hintBtn.textContent = t('hint');
-            
-            // 强制更新所有文本元素
+            // 更新其他文本元素
             updateAllTextElements();
         }
-
-        function updateAllTextElements() {
-            // 更新游戏状态文本
-            if (remainingPairs === 0) {
-                const finalTime = document.getElementById('timer')?.textContent || '00:00';
-                const bestTime = localStorage.getItem('linkGameBestTime') || '--:--';
-                const congratsText = document.querySelector('.congrats-text');
-                if (congratsText) {
-                    congratsText.textContent = t('congrats', {
-                        time: finalTime,
-                        bestTime: bestTime
-                    });
-                }
+        
+        // 监听语言变化
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'language') {
+                currentLang = event.newValue || 'zh-CN';
+                console.log('检测到语言变化:', currentLang);
+                applyTranslations();
             }
-            
-            // 更新提示文本
-            const updateAlert = (id, key) => {
-                const element = document.getElementById(id);
-                if (element) element.textContent = t(key);
-            };
-            
-            updateAlert('noPairsAlert', 'noPairsLeft');
-            updateAlert('loadFailedAlert', 'loadFailed');
-            updateAlert('reshuffleAlert', 'reshufflePrompt');
-            
-            // 更新字符信息区域
-            const charInfo = document.getElementById('characterInfo');
-            if (charInfo && charInfo.style.display !== 'none') {
-                const currentChar = document.getElementById('char')?.textContent;
-                if (currentChar) {
-                    const currentPair = gameCharacters.find(c => c.char === currentChar)?.pair;
-                    if (currentPair) showCharacterInfo(currentPair, {char: currentChar});
-                }
-            }
-        }
+        });
+        
+        // 页面加载时强制应用翻译
+        document.addEventListener('DOMContentLoaded', function() {
+            currentLang = localStorage.getItem('language') || 'zh-CN';
+            console.log('页面加载，当前语言:', currentLang);
+            applyTranslations();
+        });
 
         function updateAllTextElements() {
             // 更新游戏状态文本
@@ -605,10 +570,10 @@ Best Time: ${bestTime}',
 <body>
     <div class="game-container">
         <div class="header">
-            <div class="timer"><span class="label"></span><span id="timer">00:00</span></div>
-            <div class="pairs-left"><span class="label"></span><span id="pairsLeft">32</span></div>
+            <div class="timer"><span class="label" data-translate="timer">时间</span><span id="timer">00:00</span></div>
+            <div class="pairs-left"><span class="label" data-translate="pairsLeft">剩余配对</span><span id="pairsLeft">32</span></div>
             <div class="stats">
-                <div class="best-time"><span class="label"></span><span id="bestTime">--:--</span></div>
+                <div class="best-time"><span class="label" data-translate="bestTime">最佳时间</span><span id="bestTime">--:--</span></div>
             </div>
         </div>
         
@@ -623,10 +588,10 @@ Best Time: ${bestTime}',
         </div>
         
         <div class="buttons">
-            <button id="backButton" class="button back-button" onclick="goBack()">返回主页</button>
-            <button id="restartButton" class="button restart-button" onclick="restartGame()">重新开始</button>
-            <button id="soundButton" class="button sound-button" onclick="toggleSound()">音效: 开</button>
-            <button id="hintButton" class="button" onclick="showHint()">提示</button>
+            <button id="backButton" class="button back-button" onclick="goBack()" data-translate="back">返回主页</button>
+            <button id="restartButton" class="button restart-button" onclick="restartGame()" data-translate="restart">重新开始</button>
+            <button id="soundButton" class="button sound-button" onclick="toggleSound()" data-translate="soundOn">音效: 开</button>
+            <button id="hintButton" class="button" onclick="showHint()" data-translate="hint">提示</button>
         </div>
     </div>
 
@@ -707,12 +672,19 @@ Best Time: ${bestTime}',
             addTouchSupport();
             applyTranslations(); // 确保在页面加载时立即应用翻译
             // 强制更新所有标签
-            document.querySelector('.timer .label').textContent = t('timer') + ': ';
-            document.querySelector('.pairs-left .label').textContent = t('pairsLeft') + ': ';
-            document.querySelector('.best-time .label').textContent = t('bestTime') + ': ';
-            document.querySelector('.back-button').textContent = t('back');
-            document.querySelector('.restart-button').textContent = t('restart');
-            document.querySelector('.button:last-child').textContent = t('hint');
+            const timerLabelEl = document.querySelector('.timer .label');
+            const pairsLabelEl = document.querySelector('.pairs-left .label');
+            const bestTimeLabelEl = document.querySelector('.best-time .label');
+            const backBtnEl = document.querySelector('.back-button');
+            const restartBtnEl = document.querySelector('.restart-button');
+            const hintBtnEl = document.querySelector('.button:last-child');
+            
+            if (timerLabelEl) timerLabelEl.textContent = t('timer') + ': ';
+            if (pairsLabelEl) pairsLabelEl.textContent = t('pairsLeft') + ': ';
+            if (bestTimeLabelEl) bestTimeLabelEl.textContent = t('bestTime') + ': ';
+            if (backBtnEl) backBtnEl.textContent = t('back');
+            if (restartBtnEl) restartBtnEl.textContent = t('restart');
+            if (hintBtnEl) hintBtnEl.textContent = t('hint');
             updateSoundButtonState();
             
             // 监听语言变化
@@ -726,6 +698,13 @@ Best Time: ${bestTime}',
                     applyTranslations();
                 }
             });
+            
+            // 检查语言设置是否已更改
+            const storedLang = localStorage.getItem('language');
+            if (storedLang && storedLang !== currentLang) {
+                currentLang = storedLang;
+                applyTranslations();
+            }
             
             // 添加屏幕唤醒锁，防止游戏过程中屏幕自动关闭
             if ('wakeLock' in navigator) {
@@ -821,7 +800,18 @@ Best Time: ${bestTime}',
         }
         
         // 更新音效按钮状态
-        updateSoundButtonState();
+        function updateSoundButton() {
+            const soundButton = document.getElementById('soundButton');
+            if (soundButton) {
+                if (soundEnabled) {
+                    soundButton.textContent = t('soundOn');
+                    soundButton.classList.remove('off');
+                } else {
+                    soundButton.textContent = t('soundOff');
+                    soundButton.classList.add('off');
+                }
+            }
+        }
         
         // 显示最佳时间
         if (bestTime) {
